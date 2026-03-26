@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CodeKickers Lab</title>
+    <title>CodeKickers</title>
     
     <!-- DSGVO: Lokale Bibliotheken statt externer CDNs -->
     <script src="js/tailwindcss.js"></script>
@@ -515,28 +515,8 @@
                 <button onclick="closePrivacyModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
             </div>
             
-            <div class="flex-1 overflow-y-auto custom-scrollbar pr-4 text-slate-300 text-sm space-y-4">
-                <div>
-                    <h3 class="font-bold text-lg text-blue-400 mb-1">Datenschutzerklärung (DSGVO-Info)</h3>
-                    <p class="mb-2">Dieses Lern-Werkzeug wurde speziell für den Bildungsbereich entwickelt und legt höchsten Wert auf Datensparsamkeit:</p>
-                    <ul class="list-disc pl-5 space-y-1 mb-2">
-                        <li><strong>Lokale Speicherung:</strong> Alle von dir erstellten Programme, Team-Einstellungen und Fortschritte werden <em>ausschließlich lokal</em> auf deinem Gerät (über den Browser-Speicher / IndexedDB) gespeichert. Es findet keine Synchronisation mit einer Cloud oder zentralen Datenbank statt.</li>
-                        <li><strong>Absolut kein Tracking:</strong> Wir verwenden keinerlei Analyse-Tools (wie Google Analytics), Werbe-Tracker oder Cookies. Dein Verhalten auf dieser Seite wird weder aufgezeichnet, noch gesendet oder ausgewertet.</li>
-                        <li><strong>Lokale Bibliotheken:</strong> Alle für den Basisbetrieb benötigten Skripte (Blockly, TailwindCSS) sind lokal eingebunden. Es fließen keine Verbindungsdaten (IP-Adressen) an Drittanbieter oder CDNs ab.</li>
-                        <li><strong>PvP Multiplayer (WebRTC):</strong> Nur wenn du dem PvP-Modus explizit zustimmst, wird die Bibliothek "PeerJS" geladen. Für das direkte Spielen gegen andere wird eine P2P-Verbindung aufgebaut, bei der deine IP-Adresse mit dem Matchmaking-Server sowie deinem Mitspieler geteilt wird.</li>
-                    </ul>
-                </div>
-                
-                <hr class="border-slate-700">
-
-                <div>
-                    <h3 class="font-bold text-lg text-emerald-400 mb-1">Impressum</h3>
-                
-                    Robin Althoff Schwenkgasse 18, 1120 Wien</p>
-                    <p class="mt-2"><strong>Kontakt</strong><br>
-                   
-                    E-Mail: kontakt@rollenspiel.org</p>
-                </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar pr-4 text-slate-300 text-sm space-y-4" data-i18n="privacyText">
+                <!-- Content will be injected dynamically based on the selected language -->
             </div>
             
             <div class="mt-4 pt-4 border-t border-slate-700 flex justify-end">
@@ -711,6 +691,73 @@
                 seasonComplete: "Season Finished!", finalRank: "Your Final Rank: ", pts: "Pts", continueBtn: "Continue",
                 // DSGVO Privacy Modals
                 privacyTitle: "Privacy & Imprint",
+                privacyText: `
+                    <div>
+                        <h3 class="font-bold text-lg text-blue-400 mb-1">Privacy Policy (GDPR Info)</h3>
+                        <p class="mb-2">This educational tool was developed specifically for the education sector and places the highest value on data minimization:</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Local Storage:</strong> All programs, team settings, and progress you create are stored <em>exclusively locally</em> on your device. There is no synchronization with a cloud.</li>
+                            <li><strong>Absolutely No Tracking:</strong> We do not use any analysis tools, advertising trackers, or cookies.</li>
+                            <li><strong>Local Libraries:</strong> All scripts required for basic operation are embedded locally.</li>
+                            <li><strong>PvP Multiplayer (WebRTC):</strong> Only if you agree to the PvP mode, "PeerJS" is loaded and a P2P connection is established.</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-emerald-400 mb-1">About the Project & Authorship</h3>
+                        <p class="mb-2"><strong>CodeKickers</strong> is an educational game that teaches logical thinking and programming basics in a playful way.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Concept & Design:</strong> The fundamental idea, detailed game design, game mechanics, and all graphics (especially the robot models, logos, and sensors) were entirely conceived and developed by <strong>Robin Althoff</strong>.</li>
+                            <li><strong>Technical Implementation:</strong> The programming and technical realization of the code was done in collaborative partnership with the Artificial Intelligence <strong>Google Gemini</strong>. Gemini served as a tool to translate my concept and design specifications into the current web code.</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-yellow-400 mb-1">Terms of Use</h3>
+                        <ol class="list-decimal pl-5 space-y-1 mb-2">
+                            <li><strong>Purpose & Educational Context:</strong> This tool was primarily developed for use in schools, educational institutions, and for private, self-directed learning. The use of the software is free of charge. Teachers are expressly invited to use the tool in their classes.</li>
+                            <li><strong>Local Storage & Privacy:</strong> CodeKickers was developed according to the principle of data minimization. All game progress, team configurations, and programming codes are stored exclusively locally in the users' browsers.</li>
+                            <li><strong>PvP Multiplayer & Code of Conduct:</strong> The PvP mode establishes a direct peer-to-peer (P2P) connection. Users must consent to this connection in advance, as IP addresses are exchanged between the parties. Since the software is used in an educational context, we expect respectful behavior when naming teams and robots.</li>
+                            <li><strong>Disclaimer:</strong> The software is provided "as is". No guarantee is given for the continuous availability of the matchmaking server or the absolute absence of errors in the simulation.</li>
+                        </ol>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-purple-400 mb-1">Licenses (Dual License Model)</h3>
+                        <p class="mb-2">This project uses a dual license model to distinguish between the technical source code and the game design and assets developed by me.</p>
+                        <ul class="list-none space-y-2 mb-2">
+                            <li class="bg-slate-800 p-3 rounded border border-slate-600">
+                                <strong>🖥️ Source Code: MIT License</strong><br>
+                                All HTML, CSS, and JavaScript code (unless otherwise marked) is licensed under the MIT License.<br>
+                                <span class="text-green-400">Allowed:</span> You may freely use, copy, modify, and distribute the code.<br>
+                                <span class="text-yellow-400">Condition:</span> The original copyright notice and the license text must be included in all copies of the software.
+                            </li>
+                            <li class="bg-slate-800 p-3 rounded border border-slate-600">
+                                <strong>🎨 Game Design & Assets: CC BY-NC 4.0</strong><br>
+                                The game concept, game design, user interface, and all visual assets and SVG graphics are licensed under the <em>Creative Commons Attribution-NonCommercial 4.0 International</em> license.<br>
+                                <span class="text-green-400">Allowed:</span> You may share and adapt the assets for non-commercial purposes (e.g., in school lessons).<br>
+                                <span class="text-yellow-400">Condition:</span> Appropriate credit is mandatory. Use for commercial purposes (e.g., selling an app based on it) is strictly prohibited without explicit permission.
+                            </li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-pink-400 mb-1">🛠️ Third-Party Tools</h3>
+                        <p class="mb-2">This project is built on great open-source libraries:</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Google Blockly</strong> (Visual Code Editor)<br>License: Apache License 2.0 | Author: originally Google, now Raspberry Pi Foundation</li>
+                            <li><strong>Tailwind CSS</strong> (CSS Framework)<br>License: MIT License | Author: Tailwind Labs Inc.</li>
+                            <li><strong>PeerJS</strong> (WebRTC P2P Multiplayer)<br>License: MIT License | Author: Michelle Bu, Eric Zhang, and contributors</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-emerald-400 mb-1">Imprint</h3>
+                        <p><strong>Information according to § 5 TMG:</strong></p>
+                        <p>Robin Althoff<br>Schwenkgasse 18<br>1120 Wien<br>Austria</p>
+                        <p class="mt-2"><strong>Contact:</strong><br>E-Mail: kontakt@rollenspiel.org</p>
+                    </div>
+                `,
                 pvpConsentTitle: "PvP Multiplayer (WebRTC)", 
                 pvpConsentText: "To play against others, we need to establish a direct connection (P2P). An external library (PeerJS) will be loaded, and your IP address will be shared with the matchmaking server and your opponent.<br><br><strong>Do you agree to establish this connection?</strong>",
                 acceptBtn: "Accept", declineBtn: "Decline"
@@ -757,6 +804,73 @@
                 seasonComplete: "Saison Beendet!", finalRank: "Dein Endplatz: ", pts: "Pkt", continueBtn: "Weiter",
                 // DSGVO Privacy Modals
                 privacyTitle: "Datenschutz & Impressum",
+                privacyText: `
+                    <div>
+                        <h3 class="font-bold text-lg text-blue-400 mb-1">Datenschutzerklärung (DSGVO-Info)</h3>
+                        <p class="mb-2">Dieses Lern-Werkzeug wurde speziell für den Bildungsbereich entwickelt und legt höchsten Wert auf Datensparsamkeit:</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Lokale Speicherung:</strong> Alle von dir erstellten Programme, Team-Einstellungen und Fortschritte werden <em>ausschließlich lokal</em> auf deinem Gerät gespeichert. Es findet keine Synchronisation mit einer Cloud statt.</li>
+                            <li><strong>Absolut kein Tracking:</strong> Wir verwenden keinerlei Analyse-Tools, Werbe-Tracker oder Cookies.</li>
+                            <li><strong>Lokale Bibliotheken:</strong> Alle für den Basisbetrieb benötigten Skripte sind lokal eingebunden.</li>
+                            <li><strong>PvP Multiplayer (WebRTC):</strong> Nur wenn du dem PvP-Modus zustimmst, wird "PeerJS" geladen und eine P2P-Verbindung aufgebaut.</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-emerald-400 mb-1">Über das Projekt & Urheberschaft</h3>
+                        <p class="mb-2"><strong>CodeKickers</strong> ist ein Lernspiel, das logisches Denken und Programmiergrundlagen auf spielerische Weise vermittelt.</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Konzept & Design:</strong> Die grundlegende Idee, das detaillierte Game Design, die Spielmechaniken sowie sämtliche Grafiken (insbesondere die Roboter-Modelle, Logos und Sensoren) wurden vollständig von <strong>Robin Althoff</strong> erdacht und entwickelt.</li>
+                            <li><strong>Technische Umsetzung:</strong> Die Programmierung und technische Realisierung des Codes erfolgte in kollaborativer Zusammenarbeit mit der Künstlichen Intelligenz <strong>Google Gemini</strong>. Gemini diente als Werkzeug, um mein Konzept und meine Design-Vorgaben in den vorliegenden Web-Code zu übersetzen.</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-yellow-400 mb-1">Nutzungsbedingungen (Terms of Use)</h3>
+                        <ol class="list-decimal pl-5 space-y-1 mb-2">
+                            <li><strong>Zweck und Bildungskontext:</strong> Dieses Tool wurde primär für den Einsatz in Schulen, Bildungseinrichtungen und für das private, selbstgesteuerte Lernen entwickelt. Die Nutzung der Software ist kostenlos. Lehrkräfte sind ausdrücklich eingeladen, das Tool im Unterricht einzusetzen.</li>
+                            <li><strong>Lokale Speicherung und Datenschutz:</strong> CodeKickers wurde nach dem Prinzip der Datensparsamkeit entwickelt. Alle Spielstände, Team-Konfigurationen und Programmiercodes werden ausschließlich lokal im Browser der Nutzer:innen gespeichert.</li>
+                            <li><strong>PvP-Multiplayer & Verhaltensregeln:</strong> Der PvP-Modus baut eine direkte Peer-to-Peer-Verbindung (P2P) auf. Nutzer:innen müssen dieser Verbindung vorab zustimmen, da hierbei IP-Adressen zwischen den Parteien ausgetauscht werden. Da die Software im Bildungskontext eingesetzt wird, erwarten wir bei der Namensgebung der Teams und Roboter einen respektvollen Umgang.</li>
+                            <li><strong>Haftungsausschluss:</strong> Die Software wird „wie besehen“ (as is) zur Verfügung gestellt. Es wird keine Garantie für die ständige Verfügbarkeit des Matchmaking-Servers oder die absolute Fehlerfreiheit der Simulation übernommen.</li>
+                        </ol>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-purple-400 mb-1">Lizenzen (Duales Lizenzmodell)</h3>
+                        <p class="mb-2">Dieses Projekt verwendet ein duales Lizenzmodell, um zwischen dem technischen Quellcode und dem von mir entwickelten Game Design sowie den Assets zu unterscheiden.</p>
+                        <ul class="list-none space-y-2 mb-2">
+                            <li class="bg-slate-800 p-3 rounded border border-slate-600">
+                                <strong>🖥️ Quellcode: MIT License</strong><br>
+                                Der gesamte HTML-, CSS- und JavaScript-Code (sofern nicht anders gekennzeichnet) steht unter der MIT-Lizenz.<br>
+                                <span class="text-green-400">Erlaubt:</span> Du darfst den Code frei verwenden, kopieren, verändern und verbreiten.<br>
+                                <span class="text-yellow-400">Bedingung:</span> Der originale Copyright-Hinweis und der Lizenztext müssen in allen Kopien der Software enthalten sein.
+                            </li>
+                            <li class="bg-slate-800 p-3 rounded border border-slate-600">
+                                <strong>🎨 Game Design & Assets: CC BY-NC 4.0</strong><br>
+                                Das Spielkonzept, das Game Design, die Benutzeroberfläche sowie alle visuellen Assets und SVG-Grafiken stehen unter der Lizenz <em>Creative Commons Namensnennung - Nicht-kommerziell 4.0 International</em>.<br>
+                                <span class="text-green-400">Erlaubt:</span> Du darfst die Assets für nicht-kommerzielle Zwecke (z. B. im Schulunterricht) teilen und anpassen.<br>
+                                <span class="text-yellow-400">Bedingung:</span> Eine angemessene Urheberangabe ist zwingend erforderlich. Eine Nutzung für kommerzielle Zwecke (z. B. Verkauf einer darauf basierenden App) ist ohne ausdrückliche Erlaubnis untersagt.
+                            </li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-pink-400 mb-1">🛠️ Eingesetzte Drittanbieter-Tools</h3>
+                        <p class="mb-2">Dieses Projekt baut auf großartigen Open-Source-Bibliotheken auf:</p>
+                        <ul class="list-disc pl-5 space-y-1 mb-2">
+                            <li><strong>Google Blockly</strong> (Visueller Code-Editor)<br>Lizenz: Apache License 2.0 | Urheber: ursprünglich Google, jetzt Raspberry Pi Foundation</li>
+                            <li><strong>Tailwind CSS</strong> (CSS Framework)<br>Lizenz: MIT License | Urheber: Tailwind Labs Inc.</li>
+                            <li><strong>PeerJS</strong> (WebRTC P2P-Multiplayer)<br>Lizenz: MIT License | Urheber: Michelle Bu, Eric Zhang, und Mitwirkende</li>
+                        </ul>
+                    </div>
+                    <hr class="border-slate-700">
+                    <div>
+                        <h3 class="font-bold text-lg text-emerald-400 mb-1">Impressum</h3>
+                        <p><strong>Angaben gemäß § 5 TMG:</strong></p>
+                        <p>Robin Althoff<br>Schwenkgasse 18<br>1120 Wien<br>Österreich</p>
+                        <p class="mt-2"><strong>Kontakt:</strong><br>E-Mail: kontakt@rollenspiel.org</p>
+                    </div>
+                `,
                 pvpConsentTitle: "PvP Multiplayer (WebRTC)", 
                 pvpConsentText: "Um gegen andere Spieler antreten zu können, müssen wir eine direkte Verbindung (P2P) herstellen. Dafür wird eine externe Bibliothek (PeerJS) geladen und deine IP-Adresse wird mit dem Vermittlungsserver sowie deinem Mitspieler geteilt.<br><br><strong>Bist du einverstanden, diese Verbindung aufzubauen?</strong>",
                 acceptBtn: "Zustimmen", declineBtn: "Ablehnen"
