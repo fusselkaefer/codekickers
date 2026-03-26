@@ -496,6 +496,13 @@
         </div>
     </main>
 
+    <!-- Fullscreen Toggle Button -->
+    <button onclick="toggleFullScreen()" id="fullscreenBtn" class="fixed bottom-4 left-4 z-[100] w-12 h-12 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-full shadow-lg border border-slate-600 transition-all flex items-center justify-center opacity-50 hover:opacity-100" title="Vollbild umschalten">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+    </button>
+
     <!-- MODALS -->
     <!-- Settings Modal -->
     <div id="settingsModal" class="hidden absolute inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm">
@@ -4101,6 +4108,23 @@
             lastFrameTime = 0;
             cancelAnimationFrame(simLoopId);
             simLoopId = requestAnimationFrame(simLoop); // Läuft reaktiv (Gast wartet auf SYNC)
+        }
+
+        function toggleFullScreen() {
+            let elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari / iOS */
+                    document.webkitExitFullscreen();
+                }
+            }
         }
 
         function transitionToPvPBoard() {
