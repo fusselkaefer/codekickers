@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CodeKickers Lab</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Blockly Library -->
-    <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
-    <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
     
-    <!-- PeerJS für PvP Multiplayer -->
-    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    <!-- DSGVO: Lokale Bibliotheken statt externer CDNs -->
+    <script src="js/tailwindcss.js"></script>
+    <script src="js/blockly_compressed.js"></script>
+    <script src="js/blocks_compressed.js"></script>
+    
+    <!-- PeerJS wird aus DSGVO-Gründen erst nach Zustimmung dynamisch geladen -->
+    <!-- <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script> -->
 
     <!-- Dynamic Language Detection & Loading -->
     <script>
@@ -20,14 +21,13 @@
             localStorage.setItem('roboLang', currentLang);
         }
         document.documentElement.lang = currentLang;
-        document.write('<script src="https://unpkg.com/blockly/msg/' + currentLang + '.js"><\/script>');
+        // DSGVO: Sprachdatei lokal laden
+        document.write('<script src="js/msg/' + currentLang + '.js"><\/script>');
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
-        
         body {
-            font-family: 'Fredoka', sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: #0f172a;
             color: white;
             overscroll-behavior: none;
@@ -85,14 +85,16 @@
             <button id="navLab" onclick="setMode('LAB')" class="px-5 py-1.5 rounded-full bg-blue-600 text-white font-bold shadow transition-all text-sm whitespace-nowrap" data-i18n="navLab">🛠️ Construction</button>
             <button id="navPvE" onclick="setMode('PVE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvE">⚔️ Schnellspiel</button>
             <button id="navLeague" onclick="setMode('LEAGUE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navLeague">🏆 Liga</button>
-            <button id="navPvP" onclick="setMode('PVP')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvP">🌐 PvP Match</button>
+            <button id="navPvP" onclick="handlePvPClick()" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvP">🌐 PvP Match</button>
         </div>
 
-        <div class="flex space-x-4 items-center pl-2 shrink-0">
+        <div class="flex space-x-2 md:space-x-4 items-center pl-2 shrink-0">
             <select id="langSelector" onchange="changeLanguage(this.value)" class="bg-slate-800 text-white border border-slate-600 rounded px-2 py-1 text-sm outline-none cursor-pointer focus:border-blue-400 transition-colors">
                 <option value="en">🇬🇧 EN</option>
                 <option value="de">🇩🇪 DE</option>
             </select>
+            <!-- Privacy Button -->
+            <button onclick="openPrivacyModal()" id="privacyBtn" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 shadow flex items-center justify-center text-xl transition-all" title="Datenschutz & DSGVO">🛡️</button>
             <!-- Settings Button -->
             <button onclick="openSettingsModal()" id="settingsBtn" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 shadow flex items-center justify-center text-xl transition-all" title="Team Settings">🎨</button>
         </div>
@@ -496,7 +498,76 @@
         </div>
     </main>
 
+    <!-- Fullscreen Toggle Button -->
+    <button onclick="toggleFullScreen()" id="fullscreenBtn" class="fixed bottom-4 left-4 z-[100] w-12 h-12 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-full shadow-lg border border-slate-600 transition-all flex items-center justify-center opacity-50 hover:opacity-100" title="Vollbild umschalten">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+    </button>
+
     <!-- MODALS -->
+
+    <!-- DSGVO: Privacy & Imprint Modal -->
+    <div id="privacyModal" class="hidden absolute inset-0 z-[70] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-slate-900 p-6 rounded-xl border border-slate-600 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                <h2 class="text-2xl font-bold text-white" data-i18n="privacyTitle">Datenschutz & Impressum</h2>
+                <button onclick="closePrivacyModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scrollbar pr-4 text-slate-300 text-sm space-y-4">
+                <div>
+                    <h3 class="font-bold text-lg text-blue-400 mb-1">Datenschutzerklärung (DSGVO-Info)</h3>
+                    <p class="mb-2">Dieses Lern-Werkzeug wurde speziell für den Bildungsbereich entwickelt und legt höchsten Wert auf Datensparsamkeit:</p>
+                    <ul class="list-disc pl-5 space-y-1 mb-2">
+                        <li><strong>Lokale Speicherung:</strong> Alle von dir erstellten Programme, Team-Einstellungen und Fortschritte werden <em>ausschließlich lokal</em> auf deinem Gerät (über den Browser-Speicher / IndexedDB) gespeichert. Es findet keine Synchronisation mit einer zentralen Datenbank statt.</li>
+                        <li><strong>Kein Nutzertracking:</strong> Wir verwenden keine Analyse-Cookies (wie Google Analytics) oder Werbe-Tracker.</li>
+                        <li><strong>Externe Bibliotheken (CDNs):</strong> Für die grundlegende Funktion der Seite laden wir Programmbibliotheken (Blockly, TailwindCSS) von Content Delivery Networks (CDNs). Dabei wird technisch bedingt deine IP-Adresse an diese Server übertragen.</li>
+                        <li><strong>PvP Multiplayer (WebRTC):</strong> Nur wenn du dem PvP-Modus explizit zustimmst, wird die Bibliothek "PeerJS" geladen. Für das direkte Spielen gegen andere wird eine P2P-Verbindung aufgebaut, bei der deine IP-Adresse mit dem Matchmaking-Server sowie deinem Mitspieler geteilt wird.</li>
+                    </ul>
+                </div>
+                
+                <hr class="border-slate-700">
+
+                <div>
+                    <h3 class="font-bold text-lg text-emerald-400 mb-1">Impressum</h3>
+                    <p class="italic text-slate-500 mb-2">(Platzhalter für schulische/institutionelle Angaben)</p>
+                    <p><strong>Angaben gemäß § 5 TMG:</strong></p>
+                    <p>Name der Schule / Institution<br>
+                    Musterstraße 1<br>
+                    12345 Musterstadt</p>
+                    <p class="mt-2"><strong>Vertreten durch:</strong><br>
+                    Max Mustermann (Schulleitung/Projektleitung)</p>
+                    <p class="mt-2"><strong>Kontakt:</strong><br>
+                    Telefon: +49 (0) 123 44 55 66<br>
+                    E-Mail: info@muster-schule.de</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-slate-700 flex justify-end">
+                <button onclick="closePrivacyModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded font-bold text-white shadow transition-colors" data-i18n="closeBtn">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DSGVO: PvP WebRTC Consent Modal -->
+    <div id="pvpConsentModal" class="hidden absolute inset-0 z-[80] bg-black/90 flex items-center justify-center backdrop-blur-md p-4">
+        <div class="bg-slate-900 p-8 rounded-2xl border border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.3)] w-full max-w-lg text-center">
+            <div class="text-6xl mb-4">🌐</div>
+            <h2 class="text-2xl font-bold text-white mb-4" data-i18n="pvpConsentTitle">PvP Multiplayer (WebRTC)</h2>
+            <p class="text-slate-300 mb-6 text-sm leading-relaxed" data-i18n="pvpConsentText">
+                Um gegen andere Spieler antreten zu können, müssen wir eine direkte Verbindung (P2P) herstellen. 
+                Dafür wird eine externe Bibliothek (PeerJS) geladen und deine IP-Adresse wird mit dem Vermittlungsserver sowie deinem Mitspieler geteilt. 
+                <br><br>
+                <strong>Bist du einverstanden, diese Verbindung aufzubauen?</strong>
+            </p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="declinePvPConsent()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-bold transition-colors w-full" data-i18n="declineBtn">Ablehnen</button>
+                <button onclick="acceptPvPConsent()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold text-white shadow-lg transition-colors w-full" data-i18n="acceptBtn">Zustimmen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Settings Modal -->
     <div id="settingsModal" class="hidden absolute inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-slate-900 p-6 rounded-xl border border-slate-600 shadow-2xl w-[400px]">
@@ -624,7 +695,7 @@
                 teamBlue: "Team Blue", teamRed: "Team Red",
                 // Blockly
                 catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators", catComms: "Communication",
-                optBall: "Ball", optAny: "Any Sensor", optWall: "Wall", optEnemy: "Enemy", optTeammate: "Teammate", optEnemyGoal: "Enemy Goal", optOwnGoal: "Own Goal",
+                optBall: "Ball", optAny: "Any Sensor", optWall: "Wall", optEnemy: "Enemy", optTeammate: "Teammate", optTeammateAny: "Any Teammate", optEnemyGoal: "Enemy Goal", optOwnGoal: "Own Goal",
                 optOn: "ON", optOff: "OFF", optModeWait: "⏳ Wait for completion", optModeImmediate: "⚡ Immediate", blkStart: "On Test Start", blkSensSees: "When Sensor %1 sees %2 %3", blkSensLost: "When %2 leaves view of Sensor %1 %3", blkBatLvlEvt: "When Battery %1 %2 percent",
                 blkBatChgEvt: "When Battery is charging", blkMoveFwd: "Move forward %1 steps", blkMoveBwd: "Move backward %1 steps",
                 blkSprintFwd: "🔋 Sprint forward %1 steps", blkSprintBwd: "🔋 Sprint backward %1 steps", blkTurnL: "Turn left %1 degrees",
@@ -642,7 +713,12 @@
                 botNameLabel: "Bot Name", ownGoal: "OWN GOAL", matchSummary: "Match Summary", noGoals: "No goals scored.",
                 // League
                 leagueTitle: "CodeKickers League", startSeason: "Start New Season", standings: "Standings", matchday: "Matchday", playMatchBtn: "Play Match",
-                seasonComplete: "Season Finished!", finalRank: "Your Final Rank: ", pts: "Pts", continueBtn: "Continue"
+                seasonComplete: "Season Finished!", finalRank: "Your Final Rank: ", pts: "Pts", continueBtn: "Continue",
+                // DSGVO Privacy Modals
+                privacyTitle: "Privacy & Imprint",
+                pvpConsentTitle: "PvP Multiplayer (WebRTC)", 
+                pvpConsentText: "To play against others, we need to establish a direct connection (P2P). An external library (PeerJS) will be loaded, and your IP address will be shared with the matchmaking server and your opponent.<br><br><strong>Do you agree to establish this connection?</strong>",
+                acceptBtn: "Accept", declineBtn: "Decline"
             },
             de: {
                 navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 PvP Match", importBtn: "📥 Import", exportBtn: "📤 Export",
@@ -665,7 +741,7 @@
                 teamBlue: "Team Blau", teamRed: "Team Rot",
                 // Blockly
                 catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren", catComms: "Kommunikation",
-                optBall: "Ball", optAny: "Irgendein Sensor", optWall: "Wand", optEnemy: "Gegner", optTeammate: "Teammitglied", optEnemyGoal: "Gegnerisches Tor", optOwnGoal: "Eigenes Tor",
+                optBall: "Ball", optAny: "Irgendein Sensor", optWall: "Wand", optEnemy: "Gegner", optTeammate: "Teammitglied", optTeammateAny: "Irgendein Teammitglied", optEnemyGoal: "Gegnerisches Tor", optOwnGoal: "Eigenes Tor",
                 optOn: "AN", optOff: "AUS", optModeWait: "⏳ Warten auf Abschluss", optModeImmediate: "⚡ Sofort", blkStart: "Bei Start", blkSensSees: "Wenn Sensor %1 sieht: %2 %3", blkSensLost: "Wenn %2 Sichtfeld von Sensor %1 verlässt %3", blkBatLvlEvt: "Wenn Batterie %1 %2 Prozent",
                 blkBatChgEvt: "Wenn Batterie auflädt", blkMoveFwd: "Fahre vorwärts %1 Schritte", blkMoveBwd: "Fahre rückwärts %1 Schritte",
                 blkSprintFwd: "🔋 Sprinte vorwärts %1 Schritte", blkSprintBwd: "🔋 Sprinte rückwärts %1 Schritte", blkTurnL: "Drehe links um %1 Grad",
@@ -683,11 +759,66 @@
                 botNameLabel: "Bot Name", ownGoal: "EIGENTOR", matchSummary: "Spielzusammenfassung", noGoals: "Keine Tore gefallen.",
                 // League
                 leagueTitle: "CodeKickers League", startSeason: "Neue Saison starten", standings: "Tabelle", matchday: "Spieltag", playMatchBtn: "Spiel starten",
-                seasonComplete: "Saison Beendet!", finalRank: "Dein Endplatz: ", pts: "Pkt", continueBtn: "Weiter"
+                seasonComplete: "Saison Beendet!", finalRank: "Dein Endplatz: ", pts: "Pkt", continueBtn: "Weiter",
+                // DSGVO Privacy Modals
+                privacyTitle: "Datenschutz & Impressum",
+                pvpConsentTitle: "PvP Multiplayer (WebRTC)", 
+                pvpConsentText: "Um gegen andere Spieler antreten zu können, müssen wir eine direkte Verbindung (P2P) herstellen. Dafür wird eine externe Bibliothek (PeerJS) geladen und deine IP-Adresse wird mit dem Vermittlungsserver sowie deinem Mitspieler geteilt.<br><br><strong>Bist du einverstanden, diese Verbindung aufzubauen?</strong>",
+                acceptBtn: "Zustimmen", declineBtn: "Ablehnen"
             }
         };
 
         const t = (key) => i18n[currentLang][key] || key;
+
+        // --- DSGVO & PRIVACY LOGIC ---
+        function openPrivacyModal() {
+            document.getElementById('privacyModal').classList.remove('hidden');
+            document.getElementById('privacyModal').classList.add('flex');
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacyModal').classList.add('hidden');
+            document.getElementById('privacyModal').classList.remove('flex');
+        }
+
+        function handlePvPClick() {
+            if (localStorage.getItem('peerJsConsent') === 'true') {
+                ensurePeerJsLoaded(() => setMode('PVP'));
+            } else {
+                document.getElementById('pvpConsentModal').classList.remove('hidden');
+                document.getElementById('pvpConsentModal').classList.add('flex');
+            }
+        }
+
+        function acceptPvPConsent() {
+            localStorage.setItem('peerJsConsent', 'true');
+            document.getElementById('pvpConsentModal').classList.add('hidden');
+            document.getElementById('pvpConsentModal').classList.remove('flex');
+            ensurePeerJsLoaded(() => setMode('PVP'));
+        }
+
+        function declinePvPConsent() {
+            document.getElementById('pvpConsentModal').classList.add('hidden');
+            document.getElementById('pvpConsentModal').classList.remove('flex');
+        }
+
+        function ensurePeerJsLoaded(callback) {
+            if (window.Peer) {
+                callback();
+                return;
+            }
+            // Zeige kurz Ladebildschirm wenn gewünscht, oder lade einfach Skript
+            let script = document.createElement('script');
+            script.src = "https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js";
+            script.onload = () => {
+                callback();
+            };
+            script.onerror = () => {
+                customAlert("Fehler beim Laden der Multiplayer-Bibliothek (PeerJS). Bitte prüfe deine Internetverbindung oder Firewall.");
+            };
+            document.head.appendChild(script);
+        }
+
 
         // --- CUSTOM MODALS ---
         let promptCallback = null;
@@ -3578,7 +3709,7 @@
                 ctx.fill();
                 
                 // Name Box
-                ctx.font = 'bold 11px Fredoka, sans-serif';
+                ctx.font = 'bold 11px system-ui, sans-serif';
                 let textW = ctx.measureText(botLabel).width + 12;
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                 ctx.beginPath();
@@ -3599,9 +3730,9 @@
 
             if (currentMode === 'LAB' && overlayCountdown > 0) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.fillRect(0, 0, canvasObj.width, canvasObj.height);
-                ctx.fillStyle = '#fde047'; ctx.font = 'bold 48px Fredoka, sans-serif'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#fde047'; ctx.font = 'bold 48px system-ui, sans-serif'; ctx.textAlign = 'center';
                 ctx.fillText(t('goal'), canvasObj.width/2, canvasObj.height/2 - 20);
-                ctx.fillStyle = '#fff'; ctx.font = 'bold 36px Fredoka, sans-serif';
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 36px system-ui, sans-serif';
                 ctx.fillText(Math.ceil(overlayCountdown / 60), canvasObj.width/2, canvasObj.height/2 + 30);
             }
         }
@@ -3634,7 +3765,7 @@
                             initThreads();
                         }
                     } else if (pveState.status === 'MATCH_END_OVERLAY') {
-                        // Warte auf Klick vom User (dismissMatchEnd)
+                        // Warte auf Klick vom User
                     } else if (pveState.status === 'PLAYING') {
                         pveState.ticks--;
                         if (pveState.ticks % 60 === 0) updatePvEUI();
@@ -3862,141 +3993,118 @@
                         
                         document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
                         document.getElementById('pvpLobbyHostColor').style.borderColor = pvpHostColor;
-                        document.getElementById('pvpLobbyHostColor').innerHTML = getLogoSVG(pvpHostLogoObj, '100%');
                         
-                        // Gast sendet seine Roboter-Daten und Ausweichfarbe
                         let exportData = {
                             teamName: playerTeamName,
                             teamColor: playerTeamColor,
-                            altColor: playerAltColor,
                             logo: playerLogo,
                             teams: teams.map(t => ({ id: t.id, weight: t.weight, name: t.name, workspaceJSON: t.workspaceJSON })),
-                            sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal, nameKey: s.nameKey, color: s.color}))
+                            sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal}))
                         };
-
-                        // Gast übernimmt die Bot-Namen des Hosts (für UI Anzeige während des Spiels)
-                        guestTeamData = { teamName: hostData.teamName, teamColor: hostData.teamColor, logo: hostData.logo, teams: hostData.teams };
                         
-                        pvpConn.send({ type: 'GUEST_READY', payload: JSON.stringify(exportData) });
+                        pvpConn.send({
+                            type: 'GUEST_READY',
+                            payload: JSON.stringify(exportData)
+                        });
                         
-                        setTimeout(() => {
-                            setHandshakeStatus("Daten erfolgreich synchronisiert! Warte auf Spielstart...", true);
-                        }, 500);
-                    } catch (err) {
-                        setHandshakeStatus("Fehler beim Komprimieren/Senden: " + err.message, false);
+                        setHandshakeStatus("Daten gesendet. Warte auf Start...", true);
+                    } catch(e) {
+                        console.error("Error parsing host data", e);
                     }
-                }
-                else if (data.type === 'GUEST_READY' && isPvPHost) {
+                } else if (data.type === 'GUEST_READY' && isPvPHost) {
                     try {
-                        setHandshakeStatus("Gast-Daten erfolgreich empfangen! Bereit zum Start.", true);
-                        let gData = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
+                        setHandshakeStatus("Gast-Daten empfangen. Match kann starten!", true);
+                        guestTeamData = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
                         
-                        // Farbe überprüfen - wenn Konflikt, Ausweichfarbe nutzen!
-                        if (gData.teamColor === playerTeamColor) {
-                            gData.teamColor = (gData.altColor && gData.altColor !== playerTeamColor) ? gData.altColor : '#ffffff';
-                            if(gData.logo) gData.logo.bgColor = gData.teamColor;
-                        }
-                        
-                        pvpGuestName = gData.teamName;
-                        pvpGuestColor = gData.teamColor;
-                        pvpGuestLogoObj = gData.logo;
-                        guestTeamData = gData;
+                        pvpGuestName = guestTeamData.teamName;
+                        pvpGuestColor = guestTeamData.teamColor;
+                        pvpGuestLogoObj = guestTeamData.logo;
                         
                         document.getElementById('pvpLobbyGuestName').innerText = pvpGuestName;
                         document.getElementById('pvpLobbyGuestColor').style.borderColor = pvpGuestColor;
-                        document.getElementById('pvpLobbyGuestColor').innerHTML = getLogoSVG(pvpGuestLogoObj, '100%');
                         
                         let btnStart = document.getElementById('btnStartMatch');
                         if (btnStart) {
                             btnStart.disabled = false;
-                            btnStart.className = "bg-yellow-500 hover:bg-yellow-400 transition-colors px-8 py-4 rounded-xl text-slate-900 font-bold text-2xl w-full shadow-lg uppercase tracking-wider cursor-pointer";
+                            btnStart.className = "bg-green-600 hover:bg-green-500 px-8 py-4 rounded-xl text-white font-bold text-2xl w-full shadow-lg uppercase tracking-wider transition-transform hover:scale-105";
                         }
-                    } catch (err) {
-                        setHandshakeStatus("Fehler beim Lesen der Gast-Daten: " + err.message, false);
+                    } catch(e) {
+                        console.error("Error parsing guest data", e);
                     }
-                } 
-                else if (data.type === 'START_MATCH') {
-                    pvpGuestColor = data.payload.guestColor;
-                    pvpHostColor = data.payload.hostColor;
-                    pvpGuestLogoObj = data.payload.guestLogo;
-                    pvpHostLogoObj = data.payload.hostLogo;
-                    
-                    // Der Gast übernimmt das komplette, fertig konfigurierte Sensor-Array vom Host
-                    if (data.payload.allSensors) allSensors = data.payload.allSensors;
-                    
+                } else if (data.type === 'START_MATCH' && !isPvPHost) {
                     startClientMatch();
-                }
-                else if (data.type === 'MATCH_ENDED') {
-                    pvpMatchInProgress = false;
-                    simRunning = false;
-                    hideOverlay();
-                    document.getElementById('pvpMatchUI').classList.add('hidden');
-                    document.getElementById('pvpMatchUI').classList.remove('flex');
-                    document.getElementById('pvpLobby').classList.remove('hidden');
-                    document.getElementById('pvpLobby').classList.add('flex');
-                    cancelAnimationFrame(simLoopId);
-                }
-                else if (data.type === 'SYNC' && !isPvPHost) {
-                    // Gast synchronisiert Simulation reaktiv
+                } else if (data.type === 'SYNC' && !isPvPHost) {
+                    if (!pvpMatchInProgress) return;
+                    
                     pveBall.x = data.b.x;
                     pveBall.y = data.b.y;
                     
-                    for(let i=0; i<3; i++) {
-                        if(pvePlayerBots[i] && data.p[i]) {
-                            pvePlayerBots[i].x = data.p[i].x; pvePlayerBots[i].y = data.p[i].y;
-                            pvePlayerBots[i].angle = data.p[i].a; pvePlayerBots[i].battery = data.p[i].bat;
-                            pvePlayerBots[i].isKicking = data.p[i].kick;
-                            pvePlayerBots[i].act = {};
-                            if (data.p[i].act) data.p[i].act.forEach(k => pvePlayerBots[i].act[k] = true);
-                        }
-                        if(pveEnemyBots[i] && data.e[i]) {
-                            pveEnemyBots[i].x = data.e[i].x; pveEnemyBots[i].y = data.e[i].y;
-                            pveEnemyBots[i].angle = data.e[i].a; pveEnemyBots[i].battery = data.e[i].bat;
-                            pveEnemyBots[i].isKicking = data.e[i].kick;
-                            pveEnemyBots[i].act = {};
-                            if (data.e[i].act) data.e[i].act.forEach(k => pveEnemyBots[i].act[k] = true);
-                        }
-                    }
-
                     pveState.scorePlayer = data.sp;
                     pveState.scoreEnemy = data.se;
                     pveState.ticks = data.t;
                     pveState.half = data.h;
-                    pveState.status = data.st;
-                    pveState.goals = data.g || [];
                     
-                    updatePvPUI();
-
                     if (data.st === 'OVERLAY' || data.st === 'MATCH_END_OVERLAY') {
-                        overlayCountdown = data.oc;
-                        if (data.st === 'MATCH_END_OVERLAY' && pveState.guestDismissed) {
-                            // Bereits lokal durch den Gast weggeklickt, nicht wieder einblenden
-                        } else {
-                            document.getElementById('pvpMatchOverlay').classList.remove('hidden');
-                            document.getElementById('pvpMatchOverlay').classList.add('flex');
-                            document.getElementById('pvpMatchOverlayText').innerText = data.msgTitle;
-                            document.getElementById('pvpMatchOverlaySub').innerText = data.msg;
-                            if (data.st === 'MATCH_END_OVERLAY') {
-                                document.getElementById('pvpMatchSummary').classList.remove('hidden');
-                                document.getElementById('pvpMatchSummary').classList.add('flex');
+                        if (pveState.status !== data.st) {
+                            pveState.status = data.st;
+                            overlayCountdown = data.oc;
+                            showMatchOverlay(data.msgTitle, data.msg, data.oc);
+                            if (data.st === 'MATCH_END_OVERLAY' && data.g) {
+                                pveState.goals = data.g;
                                 renderGoalSummary('pvpGoalList');
                             }
                         }
-                    } else {
-                        pveState.guestDismissed = false;
-                        hideOverlay();
+                        overlayCountdown = data.oc;
+                        if (data.msgTitle) document.getElementById('pvpMatchOverlayText').innerText = data.msgTitle;
+                        if (data.msg) document.getElementById('pvpMatchOverlaySub').innerText = data.msg;
+                    } else if (data.st === 'PLAYING') {
+                        if (pveState.status !== 'PLAYING') hideOverlay();
+                        pveState.status = 'PLAYING';
                     }
+                    
+                    data.p.forEach((bd, i) => {
+                        if(pvePlayerBots[i]) {
+                            pvePlayerBots[i].x = bd.x; pvePlayerBots[i].y = bd.y; pvePlayerBots[i].angle = bd.a; 
+                            pvePlayerBots[i].battery = bd.bat; pvePlayerBots[i].isKicking = bd.kick;
+                            pvePlayerBots[i].act = {};
+                            if (bd.act) bd.act.forEach(a => pvePlayerBots[i].act[a] = true);
+                        }
+                    });
+                    data.e.forEach((bd, i) => {
+                        if(pveEnemyBots[i]) {
+                            pveEnemyBots[i].x = bd.x; pveEnemyBots[i].y = bd.y; pveEnemyBots[i].angle = bd.a; 
+                            pveEnemyBots[i].battery = bd.bat; pveEnemyBots[i].isKicking = bd.kick;
+                            pveEnemyBots[i].act = {};
+                            if (bd.act) bd.act.forEach(a => pveEnemyBots[i].act[a] = true);
+                        }
+                    });
+                    
+                    updatePvPUI();
+                } else if (data.type === 'MATCH_ENDED') {
+                    disconnectPvP(false);
+                    customAlert(t('disconnectedMsg'));
                 }
             });
 
-            pvpConn.on('close', () => disconnectPvP(true));
+            pvpConn.on('close', () => {
+                disconnectPvP(false);
+                if (pvpMatchInProgress) customAlert(t('disconnectedMsg'));
+            });
         }
 
-        function disconnectPvP(wasRemote = false) {
+        function disconnectPvP(showAlert = true) {
+            if (pvpConn) {
+                pvpConn.close();
+                pvpConn = null;
+            }
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            isPvPHost = false;
             pvpMatchInProgress = false;
             simRunning = false;
-            guestTeamData = null; // Alte Gastdaten bei Trennung sofort bereinigen!
-            if (peer) { peer.destroy(); peer = null; pvpConn = null; }
+            cancelAnimationFrame(simLoopId);
             
             document.getElementById('pvpMatchUI').classList.add('hidden');
             document.getElementById('pvpMatchUI').classList.remove('flex');
@@ -4008,59 +4116,60 @@
             document.getElementById('pvpWaitingRoom').classList.add('hidden');
             document.getElementById('pvpWaitingRoom').classList.remove('flex');
             
+            document.getElementById('hostCodeContainer').classList.add('hidden');
             document.getElementById('btnHost').disabled = false;
             document.getElementById('btnJoin').disabled = false;
-            document.getElementById('hostCodeContainer').classList.add('hidden');
             
-            setHandshakeStatus("");
+            hideOverlay();
             showPvPMsg("");
-            if(wasRemote) customAlert(t('disconnectedMsg'));
-        }
-
-        function updatePvPUI() {
-            document.getElementById('pvpScoreHost').innerText = pveState.scorePlayer;
-            document.getElementById('pvpScoreGuest').innerText = pveState.scoreEnemy;
-            document.getElementById('pvpHalfDisplay').innerText = pveState.half === 1 ? t('half1') : t('half2');
-            document.getElementById('pvpTimeDisplay').innerText = formatTime(pveState.ticks);
+            
+            if (showAlert) customAlert(t('disconnectedMsg'));
         }
 
         function startPvPMatch() {
-            if (!isPvPHost) return;
-            if (!guestTeamData) {
-                customAlert(t('guestSync'));
-                return;
-            }
+            if (!isPvPHost || !pvpConn || !guestTeamData) return;
             
-            // Alte Gast-Sensoren aus globalem Array entfernen
-            allSensors = allSensors.filter(s => s.botId === null || s.botId < 3);
+            pvpConn.send({ type: 'START_MATCH' });
             
-            // Neue Gast-Sensoren importieren und mit BotId + 3 versehen (Gegner IDs)
-            guestTeamData.sensors.forEach(gs => {
-                allSensors.push({
-                    id: gs.id, // Gast-IDs beibehalten, damit der Blockly-Code des Gastes funktioniert!
-                    nameKey: gs.nameKey, color: gs.color, botId: gs.botId + 3,
-                    x: gs.x, y: gs.y, normal: gs.normal
-                });
-            });
-
-            // Start Signal senden UND das komplette Sensoren-Array dem Gast übergeben!
-            pvpConn.send({ type: 'START_MATCH', payload: { hostColor: pvpHostColor, guestColor: pvpGuestColor, hostLogo: playerLogo, guestLogo: guestTeamData.logo, allSensors: allSensors } });
-
-            // Lade Workspaces des Gastes in Enemy Workspaces des Hosts
-            for(let i=0; i<3; i++) {
-                if (guestTeamData.teams[i] && guestTeamData.teams[i].workspaceJSON) {
-                    enemyWorkspaces[i].clear();
-                    Blockly.serialization.workspaces.load(guestTeamData.teams[i].workspaceJSON, enemyWorkspaces[i]);
-                }
-            }
-
             pvePlayerBots = [];
             pveEnemyBots = [];
+            
             for(let i=0; i<3; i++) {
                 pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
+                
                 let eWeight = guestTeamData.teams[i] ? guestTeamData.teams[i].weight : 5;
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: guestTeamData.teams[i].name, sentSignals: [] });
+                let eName = guestTeamData.teams[i] ? guestTeamData.teams[i].name : "E-Bot";
+                
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
             }
+
+            // Apply logic & sensors for guest team
+            guestTeamData.teams.forEach((gt, i) => {
+                let bId = i + 3;
+                
+                let s1 = allSensors.find(s => s.id === 'S1' && s.botId === bId);
+                if (!s1) { s1 = { id: 'S1', botId: bId }; allSensors.push(s1); }
+                let s2 = allSensors.find(s => s.id === 'S2' && s.botId === bId);
+                if (!s2) { s2 = { id: 'S2', botId: bId }; allSensors.push(s2); }
+                
+                s1.color = guestTeamData.teamColor;
+                s2.color = guestTeamData.teamColor;
+
+                if (guestTeamData.sensors) {
+                    let gs1 = guestTeamData.sensors.find(s => s.id === 'S1' && s.botId === i);
+                    if (gs1) { s1.x = gs1.x; s1.y = gs1.y; s1.normal = gs1.normal; s1.botId = bId; }
+                    else s1.botId = null;
+
+                    let gs2 = guestTeamData.sensors.find(s => s.id === 'S2' && s.botId === i);
+                    if (gs2) { s2.x = gs2.x; s2.y = gs2.y; s2.normal = gs2.normal; s2.botId = bId; }
+                    else s2.botId = null;
+                }
+
+                if (enemyWorkspaces[i] && gt.workspaceJSON) {
+                    enemyWorkspaces[i].clear();
+                    Blockly.serialization.workspaces.load(gt.workspaceJSON, enemyWorkspaces[i]);
+                }
+            });
 
             transitionToPvPBoard();
             
@@ -4070,9 +4179,10 @@
             pveState.scoreEnemy = 0;
             pveState.status = 'PLAYING';
             pveState.goals = [];
+            
             resetPvEPositions();
             initThreads();
-            
+
             simRunning = true;
             lastFrameTime = 0;
             cancelAnimationFrame(simLoopId);
@@ -4082,11 +4192,13 @@
         function startClientMatch() {
             pvePlayerBots = [];
             pveEnemyBots = [];
+            
             for(let i=0; i<3; i++) {
-                // Gast spiegelt: pvePlayerBots (Host-Bots) // pveEnemyBots (Eigene Bots)
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: guestTeamData.teams[i]?.name || "Host-Bot", sentSignals: [] });
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: teams[i].name, sentSignals: [] });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: pvpHostName + " " + (i+1), act: {} });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: teams[i].name, act: {} });
             }
+            
+            transitionToPvPBoard();
             
             pveState.ticks = 90 * 60;
             pveState.half = 1;
@@ -4095,8 +4207,6 @@
             pveState.status = 'PLAYING';
             pveState.goals = [];
 
-            transitionToPvPBoard();
-            
             simRunning = true;
             lastFrameTime = 0;
             cancelAnimationFrame(simLoopId);
@@ -4112,23 +4222,47 @@
             
             document.getElementById('pvpHostScoreName').innerText = pvpHostName;
             document.getElementById('pvpHostScoreName').style.color = pvpHostColor;
-            if(pvpHostLogoObj) document.getElementById('pvpHostLogo').innerHTML = getLogoSVG(pvpHostLogoObj);
+            document.getElementById('pvpHostLogo').innerHTML = getLogoSVG(pvpHostLogoObj || playerLogo);
             
             document.getElementById('pvpGuestScoreName').innerText = pvpGuestName;
             document.getElementById('pvpGuestScoreName').style.color = pvpGuestColor;
-            if(pvpGuestLogoObj) document.getElementById('pvpGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj);
+            document.getElementById('pvpGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj || playerLogo);
 
             for(let i=0; i<3; i++) {
-                document.getElementById('lblH'+i).innerText = pvePlayerBots[i].name;
-                document.getElementById('lblG'+i).innerText = pveEnemyBots[i].name;
+                document.getElementById('lblH'+i).innerText = isPvPHost ? teams[i].name : pvpHostName + " " + (i+1);
+                document.getElementById('lblG'+i).innerText = isPvPHost ? (guestTeamData?.teams[i]?.name || "E"+(i+1)) : teams[i].name;
             }
 
-            updatePvPUI();
             setTimeout(() => resizePvPCanvas(), 100);
         }
 
-        window.addEventListener('load', initDBAndApp);
+        function updatePvPUI() {
+            document.getElementById('pvpScoreHost').innerText = pveState.scorePlayer;
+            document.getElementById('pvpScoreGuest').innerText = pveState.scoreEnemy;
+            document.getElementById('pvpHalfDisplay').innerText = pveState.half === 1 ? t('half1') : t('half2');
+            document.getElementById('pvpTimeDisplay').innerText = formatTime(pveState.ticks);
+        }
 
+        window.onload = function() {
+            initDBAndApp();
+        };
+
+        function toggleFullScreen() {
+            let elem = document.documentElement;
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari / iOS */
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
     </script>
 </body>
 </html>
