@@ -616,22 +616,23 @@
                 closeBtn: "Close", simRunTitle: "Simulation running...", simRunSub: "Both robots are executing your code!",
                 goal: "GOAL!", matchEnd: "MATCH END", halfTime: "HALF TIME", switchingSides: "Switching sides...",
                 draw: "DRAW!", wins: "WINS!", envScored: "Environment Scored!", youScored: "You Scored!", teamScored: " scored!",
-                weightTooltip: "Weight: ", noPresets: "No presets saved yet.", loadBtn: "Load",
+                weightTooltip: "Weight: ", noPresets: "No presets saved yet.", loadBtn: "Load", deleteBtn: "Delete",
                 promptPreset: "Enter a name for this code preset:", presetSaved: "Code saved successfully as a preset!",
                 invalidFile: "Invalid file format!", environment: "Environment",
                 colorBlue: "Blue", colorRed: "Red", colorGreen: "Green", colorPurple: "Purple", colorYellow: "Yellow",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "White", colorGray: "Gray",
                 teamBlue: "Team Blue", teamRed: "Team Red",
                 // Blockly
-                catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators",
+                catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators", catComms: "Communication",
                 optBall: "Ball", optAny: "Any Sensor", optWall: "Wall", optEnemy: "Enemy", optTeammate: "Teammate", optEnemyGoal: "Enemy Goal", optOwnGoal: "Own Goal",
-                optOn: "ON", optOff: "OFF", blkStart: "On Test Start", blkSensSees: "When Sensor %1 sees %2", blkBatLvlEvt: "When Battery %1 %2 percent",
+                optOn: "ON", optOff: "OFF", optModeWait: "⏳ Wait for completion", optModeImmediate: "⚡ Immediate", blkStart: "On Test Start", blkSensSees: "When Sensor %1 sees %2 %3", blkSensLost: "When %2 leaves view of Sensor %1 %3", blkBatLvlEvt: "When Battery %1 %2 percent",
                 blkBatChgEvt: "When Battery is charging", blkMoveFwd: "Move forward %1 steps", blkMoveBwd: "Move backward %1 steps",
                 blkSprintFwd: "🔋 Sprint forward %1 steps", blkSprintBwd: "🔋 Sprint backward %1 steps", blkTurnL: "Turn left %1 degrees",
                 blkTurnR: "Turn right %1 degrees", blkTurnTo: "Turn to %1", blkSetMagnet: "🔋 Set Magnet %1", blkKick: "🔋 Kick!",
                 blkIf: "IF %1 THEN %2", blkIfElse: "IF %1 THEN %2 ELSE %3", blkWait: "Wait %1 seconds", blkLoopForever: "Repeat forever %1",
                 blkLoopX: "Repeat %1 times %2", blkLoopWhile: "Repeat while %1 %2", blkAnd: "%1 AND %2", blkOr: "%1 OR %2",
-                blkRandom: "pick random %1 to %2", blkSensObj: "Sensor %1 sees %2", blkBatLvl: "Battery %1 %2 percent", blkBatChg: "Battery is charging",
+                blkRandom: "pick random %1 to %2", blkSensObj: "Sensor %1 sees %2", blkSensObjNot: "Sensor %1 sees NO %2", blkSensObjLost: "%2 leaves view of Sensor %1", blkBatLvl: "Battery %1 %2 percent", blkBatChg: "Battery is charging",
+                blkSendSignal: "Send Signal %1", blkReceiveSignal: "When receiving Signal %1 %2",
                 sensCyan: "Cyan", sensGreen: "Green", sensPink: "Pink", sensOrange: "Orange", sensPurple: "Purple", sensWhite: "White",
                 pvpTitle: "PvP Multiplayer", hostGame: "Host Game", hostDesc: "Create a lobby and wait for an opponent.",
                 yourCode: "Your Lobby Code:", joinGame: "Join Game (Guest)", joinDesc: "Enter the host's 4-digit code.",
@@ -656,22 +657,23 @@
                 closeBtn: "Schließen", simRunTitle: "Simulation läuft...", simRunSub: "Roboter führen ihren Code aus!",
                 goal: "TOR!", matchEnd: "MATCH ENDE", halfTime: "HALBZEIT", switchingSides: "Seitenwechsel...",
                 draw: "UNENTSCHIEDEN!", wins: "GEWINNT!", envScored: "Gegner hat getroffen!", youScored: "Du hast getroffen!", teamScored: " hat getroffen!",
-                weightTooltip: "Gewicht: ", noPresets: "Noch keine Vorlagen gespeichert.", loadBtn: "Laden",
+                weightTooltip: "Gewicht: ", noPresets: "Noch keine Vorlagen gespeichert.", loadBtn: "Laden", deleteBtn: "Löschen",
                 promptPreset: "Gib einen Namen für diesen Code-Preset ein:", presetSaved: "Code erfolgreich als Vorlage gesichert!",
                 invalidFile: "Ungültige Datei!", environment: "Umgebung",
                 colorBlue: "Blau", colorRed: "Rot", colorGreen: "Grün", colorPurple: "Lila", colorYellow: "Gelb",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "Weiß", colorGray: "Grau",
                 teamBlue: "Team Blau", teamRed: "Team Rot",
                 // Blockly
-                catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren",
+                catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren", catComms: "Kommunikation",
                 optBall: "Ball", optAny: "Irgendein Sensor", optWall: "Wand", optEnemy: "Gegner", optTeammate: "Teammitglied", optEnemyGoal: "Gegnerisches Tor", optOwnGoal: "Eigenes Tor",
-                optOn: "AN", optOff: "AUS", blkStart: "Bei Start", blkSensSees: "Wenn Sensor %1 sieht: %2", blkBatLvlEvt: "Wenn Batterie %1 %2 Prozent",
+                optOn: "AN", optOff: "AUS", optModeWait: "⏳ Warten auf Abschluss", optModeImmediate: "⚡ Sofort", blkStart: "Bei Start", blkSensSees: "Wenn Sensor %1 sieht: %2 %3", blkSensLost: "Wenn %2 Sichtfeld von Sensor %1 verlässt %3", blkBatLvlEvt: "Wenn Batterie %1 %2 Prozent",
                 blkBatChgEvt: "Wenn Batterie auflädt", blkMoveFwd: "Fahre vorwärts %1 Schritte", blkMoveBwd: "Fahre rückwärts %1 Schritte",
                 blkSprintFwd: "🔋 Sprinte vorwärts %1 Schritte", blkSprintBwd: "🔋 Sprinte rückwärts %1 Schritte", blkTurnL: "Drehe links um %1 Grad",
                 blkTurnR: "Drehe rechts um %1 Grad", blkTurnTo: "Drehe zu %1", blkSetMagnet: "🔋 Setze Magnet auf %1", blkKick: "🔋 Kicken!",
                 blkIf: "FALLS %1 DANN %2", blkIfElse: "FALLS %1 DANN %2 SONST %3", blkWait: "Warte %1 Sekunden", blkLoopForever: "Wiederhole für immer %1",
                 blkLoopX: "Wiederhole %1 mal %2", blkLoopWhile: "Wiederhole solange %1 %2", blkAnd: "%1 UND %2", blkOr: "%1 ODER %2",
-                blkRandom: "Zufallszahl %1 bis %2", blkSensObj: "Sensor %1 sieht %2", blkBatLvl: "Batterie %1 %2 Prozent", blkBatChg: "Batterie lädt auf",
+                blkRandom: "Zufallszahl %1 bis %2", blkSensObj: "Sensor %1 sieht %2", blkSensObjNot: "Sensor %1 sieht KEIN %2", blkSensObjLost: "%2 verlässt Sichtfeld von Sensor %1", blkBatLvl: "Batterie %1 %2 Prozent", blkBatChg: "Batterie lädt auf",
+                blkSendSignal: "Sende Signal %1", blkReceiveSignal: "Wenn Signal %1 empfangen %2",
                 sensCyan: "Cyan", sensGreen: "Grün", sensPink: "Pink", sensOrange: "Orange", sensPurple: "Lila", sensWhite: "Weiß",
                 pvpTitle: "PvP Multiplayer", hostGame: "Lobby erstellen (Host)", hostDesc: "Erstelle ein Spiel und warte auf einen Gegner.",
                 yourCode: "Dein Lobby-Code:", joinGame: "Spiel beitreten (Gast)", joinDesc: "Gib den 4-stelligen Code des Hosts ein.",
@@ -1162,41 +1164,92 @@
 
         // BLOCKLY INJECTION SETUP
         function injectBlocklyDefinitions() {
+            // Register custom dropdown field for the compact gear icon using ES6 class
+            class FieldGearDropdown extends Blockly.FieldDropdown {
+                constructor(options) {
+                    super(options);
+                }
+                getText() {
+                    return '⚙️';
+                }
+            }
+            Blockly.fieldRegistry.register('field_gear_dropdown', FieldGearDropdown);
+
             const SENSOR_OPTIONS = [
                 [t('sensCyan'), "S1"], [t('sensGreen'), "S2"], [t('sensPink'), "S3"],
                 [t('sensOrange'), "S4"], [t('sensPurple'), "S5"], [t('sensWhite'), "S6"],
                 [t('optAny'), "ANY"]
             ];
 
-            const OBJECT_OPTIONS = [
-                [t('optBall'), "BALL"], 
-                [t('optWall'), "WALL"], 
-                [t('optEnemy'), "ENEMY"], 
-                [t('optTeammate'), "TEAMMATE"], 
-                [t('optEnemyGoal'), "ENEMY_GOAL"],
-                [t('optOwnGoal'), "OWN_GOAL"]
-            ];
+            // Custom Dropdowns for Objects and Targets
+            class FieldDynamicObject extends Blockly.FieldDropdown {
+                constructor() {
+                    super(FieldDynamicObject.generateOptions);
+                }
+                static generateOptions() {
+                    let n1 = (typeof teams !== 'undefined' && teams[0]) ? teams[0].name : "R1";
+                    let n2 = (typeof teams !== 'undefined' && teams[1]) ? teams[1].name : "R2";
+                    let n3 = (typeof teams !== 'undefined' && teams[2]) ? teams[2].name : "R3";
+                    let textAnyMate = (i18n[currentLang] && i18n[currentLang]['optTeammateAny']) ? i18n[currentLang]['optTeammateAny'] : (currentLang === 'de' ? "Irgendein Teammitglied" : "Any Teammate");
+                    return [
+                        [t('optBall'), "BALL"], 
+                        [t('optWall'), "WALL"], 
+                        [t('optEnemy'), "ENEMY"], 
+                        [textAnyMate, "TEAMMATE"],
+                        ["R1: " + n1, "TEAMMATE_1"],
+                        ["R2: " + n2, "TEAMMATE_2"],
+                        ["R3: " + n3, "TEAMMATE_3"],
+                        [t('optEnemyGoal'), "ENEMY_GOAL"],
+                        [t('optOwnGoal'), "OWN_GOAL"]
+                    ];
+                }
+                static fromJson(options) { return new FieldDynamicObject(); }
+            }
+            Blockly.fieldRegistry.register('field_dynamic_object', FieldDynamicObject);
 
-            const TARGET_OPTIONS = [
-                [t('optBall'), "BALL"], 
-                [t('optEnemy'), "ENEMY"], 
-                [t('optTeammate'), "TEAMMATE"], 
-                [t('optEnemyGoal'), "ENEMY_GOAL"],
-                [t('optOwnGoal'), "OWN_GOAL"]
+            class FieldDynamicTarget extends Blockly.FieldDropdown {
+                constructor() {
+                    super(FieldDynamicTarget.generateOptions);
+                }
+                static generateOptions() {
+                    let n1 = (typeof teams !== 'undefined' && teams[0]) ? teams[0].name : "R1";
+                    let n2 = (typeof teams !== 'undefined' && teams[1]) ? teams[1].name : "R2";
+                    let n3 = (typeof teams !== 'undefined' && teams[2]) ? teams[2].name : "R3";
+                    let textAnyMate = (i18n[currentLang] && i18n[currentLang]['optTeammateAny']) ? i18n[currentLang]['optTeammateAny'] : (currentLang === 'de' ? "Irgendein Teammitglied" : "Any Teammate");
+                    return [
+                        [t('optBall'), "BALL"], 
+                        [t('optEnemy'), "ENEMY"], 
+                        [textAnyMate, "TEAMMATE"],
+                        ["R1: " + n1, "TEAMMATE_1"],
+                        ["R2: " + n2, "TEAMMATE_2"],
+                        ["R3: " + n3, "TEAMMATE_3"],
+                        [t('optEnemyGoal'), "ENEMY_GOAL"],
+                        [t('optOwnGoal'), "OWN_GOAL"]
+                    ];
+                }
+                static fromJson(options) { return new FieldDynamicTarget(); }
+            }
+            Blockly.fieldRegistry.register('field_dynamic_target', FieldDynamicTarget);
+
+            const SIGNAL_OPTIONS = [
+                ["A", "A"], ["B", "B"], ["C", "C"], ["D", "D"], ["E", "E"], ["F", "F"]
             ];
 
             Blockly.defineBlocksWithJsonArray([
                 { "type": "start_block", "message0": t('blkStart'), "nextStatement": null, "colour": "#FF6680" },
-                { "type": "event_sensor_sees", "message0": t('blkSensSees'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dropdown", "name": "OBJECT", "options": OBJECT_OPTIONS } ], "nextStatement": null, "colour": "#FF6680" },
+                { "type": "event_sensor_sees", "message0": t('blkSensSees'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dynamic_object", "name": "OBJECT" }, { "type": "field_gear_dropdown", "name": "MODE", "options": [[t('optModeWait'), "WAIT"], [t('optModeImmediate'), "IMMEDIATE"]] } ], "nextStatement": null, "colour": "#FF6680" },
+                { "type": "event_sensor_lost", "message0": t('blkSensLost'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dynamic_object", "name": "OBJECT" }, { "type": "field_gear_dropdown", "name": "MODE", "options": [[t('optModeWait'), "WAIT"], [t('optModeImmediate'), "IMMEDIATE"]] } ], "nextStatement": null, "colour": "#FF6680" },
                 { "type": "event_battery_level", "message0": t('blkBatLvlEvt'), "args0": [ { "type": "field_dropdown", "name": "OP", "options": [["<", "LT"], [">", "GT"], ["=", "EQ"]] }, { "type": "input_value", "name": "VAL", "check": "Number" } ], "nextStatement": null, "colour": "#FF6680" },
                 { "type": "event_battery_charging", "message0": t('blkBatChgEvt'), "nextStatement": null, "colour": "#FF6680" },
+                { "type": "event_receive_signal", "message0": t('blkReceiveSignal'), "args0": [ { "type": "field_dropdown", "name": "SIGNAL", "options": SIGNAL_OPTIONS }, { "type": "field_gear_dropdown", "name": "MODE", "options": [[t('optModeWait'), "WAIT"], [t('optModeImmediate'), "IMMEDIATE"]] } ], "nextStatement": null, "colour": "#9966FF" },
+                { "type": "send_signal", "message0": t('blkSendSignal'), "args0": [ { "type": "field_dropdown", "name": "SIGNAL", "options": SIGNAL_OPTIONS } ], "previousStatement": null, "nextStatement": null, "colour": "#9966FF" },
                 { "type": "move_fwd", "message0": t('blkMoveFwd'), "args0": [ { "type": "input_value", "name": "STEPS", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "move_bwd", "message0": t('blkMoveBwd'), "args0": [ { "type": "input_value", "name": "STEPS", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "sprint_fwd", "message0": t('blkSprintFwd'), "args0": [ { "type": "input_value", "name": "STEPS", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "sprint_bwd", "message0": t('blkSprintBwd'), "args0": [ { "type": "input_value", "name": "STEPS", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "turn_l", "message0": t('blkTurnL'), "args0": [ { "type": "input_value", "name": "DEGREES", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "turn_r", "message0": t('blkTurnR'), "args0": [ { "type": "input_value", "name": "DEGREES", "check": "Number" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
-                { "type": "turn_to", "message0": t('blkTurnTo'), "args0": [ { "type": "field_dropdown", "name": "TARGET", "options": TARGET_OPTIONS } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
+                { "type": "turn_to", "message0": t('blkTurnTo'), "args0": [ { "type": "field_dynamic_target", "name": "TARGET" } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "set_magnet", "message0": t('blkSetMagnet'), "args0": [ { "type": "field_dropdown", "name": "STATE", "options": [[t('optOn'), "TRUE"], [t('optOff'), "FALSE"]] } ], "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "kick", "message0": t('blkKick'), "previousStatement": null, "nextStatement": null, "colour": "#4C97FF" },
                 { "type": "if_logic", "message0": t('blkIf'), "args0": [ { "type": "input_value", "name": "COND", "check": "Boolean" }, { "type": "input_statement", "name": "DO" } ], "previousStatement": null, "nextStatement": null, "colour": "#FFAB19" },
@@ -1208,7 +1261,9 @@
                 { "type": "logic_and", "message0": t('blkAnd'), "args0": [ { "type": "input_value", "name": "A", "check": "Boolean" }, { "type": "input_value", "name": "B", "check": "Boolean" } ], "inputsInline": true, "output": "Boolean", "colour": "#59C059" },
                 { "type": "logic_or", "message0": t('blkOr'), "args0": [ { "type": "input_value", "name": "A", "check": "Boolean" }, { "type": "input_value", "name": "B", "check": "Boolean" } ], "inputsInline": true, "output": "Boolean", "colour": "#59C059" },
                 { "type": "random_number", "message0": t('blkRandom'), "args0": [ { "type": "input_value", "name": "MIN", "check": "Number" }, { "type": "input_value", "name": "MAX", "check": "Number" } ], "inputsInline": true, "output": "Number", "colour": "#59C059" },
-                { "type": "sensor_object", "message0": t('blkSensObj'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dropdown", "name": "OBJECT", "options": OBJECT_OPTIONS } ], "output": "Boolean", "colour": "#5CB1D6" },
+                { "type": "sensor_object", "message0": t('blkSensObj'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dynamic_object", "name": "OBJECT" } ], "output": "Boolean", "colour": "#5CB1D6" },
+                { "type": "sensor_object_not", "message0": t('blkSensObjNot'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dynamic_object", "name": "OBJECT" } ], "output": "Boolean", "colour": "#5CB1D6" },
+                { "type": "sensor_object_lost", "message0": t('blkSensObjLost'), "args0": [ { "type": "field_dropdown", "name": "SENSOR", "options": SENSOR_OPTIONS }, { "type": "field_dynamic_object", "name": "OBJECT" } ], "output": "Boolean", "colour": "#5CB1D6" },
                 { "type": "sensing_battery_level", "message0": t('blkBatLvl'), "args0": [ { "type": "field_dropdown", "name": "OP", "options": [["<", "LT"], [">", "GT"], ["=", "EQ"]] }, { "type": "input_value", "name": "VAL", "check": "Number" } ], "output": "Boolean", "colour": "#5CB1D6" },
                 { "type": "sensing_battery_charging", "message0": t('blkBatChg'), "output": "Boolean", "colour": "#5CB1D6" }
             ]);
@@ -1218,8 +1273,13 @@
                     <category name="${t('catEvents')}" colour="#FF6680">
                         <block type="start_block"></block>
                         <block type="event_sensor_sees"></block>
+                        <block type="event_sensor_lost"></block>
                         <block type="event_battery_level"><value name="VAL"><shadow type="math_number"><field name="NUM">20</field></shadow></value></block>
                         <block type="event_battery_charging"></block>
+                    </category>
+                    <category name="${t('catComms')}" colour="#9966FF">
+                        <block type="event_receive_signal"></block>
+                        <block type="send_signal"></block>
                     </category>
                     <category name="${t('catMovement')}" colour="#4C97FF">
                         <block type="move_fwd"><value name="STEPS"><shadow type="math_number"><field name="NUM">1</field></shadow></value></block>
@@ -1244,6 +1304,8 @@
                     </category>
                     <category name="${t('catSensing')}" colour="#5CB1D6">
                         <block type="sensor_object"></block>
+                        <block type="sensor_object_not"></block>
+                        <block type="sensor_object_lost"></block>
                         <block type="sensing_battery_level"><value name="VAL"><shadow type="math_number"><field name="NUM">20</field></shadow></value></block>
                         <block type="sensing_battery_charging"></block>
                     </category>
@@ -1443,7 +1505,10 @@
                     html += `
                         <div class="flex justify-between items-center bg-slate-800 rounded px-3 py-2 border border-slate-600 shrink-0">
                             <span class="text-white font-semibold truncate flex-1">${k}</span>
-                            <button onclick="loadPreset('${k}')" class="ml-3 bg-blue-600 hover:bg-blue-500 text-xs px-3 py-1 rounded font-bold text-white transition-colors">${t('loadBtn')}</button>
+                            <div class="flex gap-2 ml-3">
+                                <button onclick="loadPreset('${k}')" class="bg-blue-600 hover:bg-blue-500 text-xs px-3 py-1 rounded font-bold text-white transition-colors">${t('loadBtn')}</button>
+                                <button onclick="deletePreset('${k}')" class="bg-red-600 hover:bg-red-500 text-xs px-3 py-1 rounded font-bold text-white transition-colors" title="${t('deleteBtn')}">🗑️</button>
+                            </div>
                         </div>
                     `;
                 });
@@ -1464,6 +1529,15 @@
                     closePresetsModal();
                     autoSave();
                 }
+            };
+        }
+
+        function deletePreset(name) {
+            if(!db) return;
+            let tx = db.transaction('presets', 'readwrite');
+            tx.objectStore('presets').delete(name);
+            tx.oncomplete = function() {
+                openPresetsModal();
             };
         }
 
@@ -2270,6 +2344,7 @@
             testRobot.magnetOn = false;
             testRobot.kx = 0;
             testRobot.ky = 0;
+            testRobot.sentSignals = [];
             
             let archIndex = Math.floor(Math.random() * ENEMY_ARCHETYPES.length);
             let arch = ENEMY_ARCHETYPES[archIndex];
@@ -2287,6 +2362,7 @@
             testEnemy.magnetOn = false;
             testEnemy.kx = 0;
             testEnemy.ky = 0;
+            testEnemy.sentSignals = [];
             
             applyArchetypeToEnemy(currentRobotId, archIndex);
 
@@ -2332,13 +2408,13 @@
             updateTeamUI(); // update top bar labels
 
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
                 
                 let eName = currentEnemyTeam.bots[i].name;
                 let eWeight = currentEnemyTeam.bots[i].w;
                 let archIndex = currentEnemyTeam.bots[i].arch;
                 
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
                 applyArchetypeToEnemy(i, archIndex, eWeight, eName);
                 
                 // Update HUD Labels
@@ -2373,6 +2449,7 @@
                 pvePlayerBots[i].magnetOn = false;
                 pvePlayerBots[i].kx = 0;
                 pvePlayerBots[i].ky = 0;
+                pvePlayerBots[i].sentSignals = [];
 
                 pveEnemyBots[i].x = eX;
                 pveEnemyBots[i].y = pveWorld.height/2 + (i-1)*100;
@@ -2383,6 +2460,7 @@
                 pveEnemyBots[i].magnetOn = false;
                 pveEnemyBots[i].kx = 0;
                 pveEnemyBots[i].ky = 0;
+                pveEnemyBots[i].sentSignals = [];
             }
         }
 
@@ -2397,12 +2475,12 @@
             botContexts = [];
 
             if (currentMode === 'LAB') {
-                botContexts.push({ bot: testRobot, isEnemy: false, threads: [], triggers: [], activeSensors: {}, wks: workspaces[currentRobotId] });
-                botContexts.push({ bot: testEnemy, isEnemy: true, threads: [], triggers: [], activeSensors: {}, wks: enemyWorkspaces[currentRobotId] });
+                botContexts.push({ bot: testRobot, isEnemy: false, threads: [], triggers: [], activeSensors: {}, visionMap: {}, prevVisionMap: {}, wks: workspaces[currentRobotId] });
+                botContexts.push({ bot: testEnemy, isEnemy: true, threads: [], triggers: [], activeSensors: {}, visionMap: {}, prevVisionMap: {}, wks: enemyWorkspaces[currentRobotId] });
             } else {
                 for(let i=0; i<3; i++) {
-                    botContexts.push({ bot: pvePlayerBots[i], isEnemy: false, threads: [], triggers: [], activeSensors: {}, wks: workspaces[i] });
-                    botContexts.push({ bot: pveEnemyBots[i], isEnemy: true, threads: [], triggers: [], activeSensors: {}, wks: enemyWorkspaces[i] });
+                    botContexts.push({ bot: pvePlayerBots[i], isEnemy: false, threads: [], triggers: [], activeSensors: {}, visionMap: {}, prevVisionMap: {}, wks: workspaces[i] });
+                    botContexts.push({ bot: pveEnemyBots[i], isEnemy: true, threads: [], triggers: [], activeSensors: {}, visionMap: {}, prevVisionMap: {}, wks: enemyWorkspaces[i] });
                 }
             }
 
@@ -2411,15 +2489,17 @@
                 
                 const startBlocks = bCtx.wks.getBlocksByType('start_block', false);
                 const eventSeeBlocks = bCtx.wks.getBlocksByType('event_sensor_sees', false);
+                const eventLostBlocks = bCtx.wks.getBlocksByType('event_sensor_lost', false);
                 const eventBatLvlBlocks = bCtx.wks.getBlocksByType('event_battery_level', false);
                 const eventBatChgBlocks = bCtx.wks.getBlocksByType('event_battery_charging', false);
+                const eventReceiveBlocks = bCtx.wks.getBlocksByType('event_receive_signal', false);
 
                 startBlocks.forEach(block => {
                     let first = block.getNextBlock();
                     if(first) bCtx.threads.push({ id: block.id, stack: [{ block: first }], currentAction: null });
                 });
                 
-                [...eventSeeBlocks, ...eventBatLvlBlocks, ...eventBatChgBlocks].forEach(block => {
+                [...eventSeeBlocks, ...eventLostBlocks, ...eventBatLvlBlocks, ...eventBatChgBlocks, ...eventReceiveBlocks].forEach(block => {
                     bCtx.triggers.push(block);
                 });
             });
@@ -2553,9 +2633,16 @@
                 if(currentMode === 'LAB') targets.push(bCtx.isEnemy ? testRobot : testEnemy);
                 else targets.push(...(bCtx.isEnemy ? pvePlayerBots : pveEnemyBots));
             }
-            if(targetType === 'TEAMMATE' && (currentMode === 'PVE' || currentMode === 'PVP')) {
-                let myTeam = bCtx.isEnemy ? pveEnemyBots : pvePlayerBots;
-                targets.push(...myTeam.filter(t => t.botId !== bot.botId));
+            if(targetType.startsWith('TEAMMATE') && (currentMode === 'PVE' || currentMode === 'PVP' || currentMode === 'LAB')) {
+                let myTeam = currentMode === 'LAB' ? (bCtx.isEnemy ? [testEnemy] : [testRobot]) : (bCtx.isEnemy ? pveEnemyBots : pvePlayerBots);
+                if (targetType === 'TEAMMATE') {
+                    targets.push(...myTeam.filter(t => t.botId !== bot.botId));
+                } else {
+                    let tmIndex = parseInt(targetType.split('_')[1]) - 1;
+                    let targetBotId = bCtx.isEnemy ? tmIndex + 3 : tmIndex;
+                    let specificMate = myTeam.find(t => t.botId === targetBotId);
+                    if (specificMate && specificMate.botId !== bot.botId) targets.push(specificMate);
+                }
             }
             
             if(targetType === 'ENEMY_GOAL' || targetType === 'OWN_GOAL') {
@@ -2607,7 +2694,19 @@
             if (!condBlock) return false;
             
             if (condBlock.type === 'sensor_object') {
-                return checkVision(bCtx, condBlock.getFieldValue('SENSOR'), condBlock.getFieldValue('OBJECT'));
+                let sensor = condBlock.getFieldValue('SENSOR');
+                let obj = condBlock.getFieldValue('OBJECT');
+                return bCtx.visionMap[`${sensor}_${obj}`];
+            }
+            if (condBlock.type === 'sensor_object_not') {
+                let sensor = condBlock.getFieldValue('SENSOR');
+                let obj = condBlock.getFieldValue('OBJECT');
+                return !bCtx.visionMap[`${sensor}_${obj}`];
+            }
+            if (condBlock.type === 'sensor_object_lost') {
+                let sensor = condBlock.getFieldValue('SENSOR');
+                let obj = condBlock.getFieldValue('OBJECT');
+                return !bCtx.visionMap[`${sensor}_${obj}`] && bCtx.prevVisionMap[`${sensor}_${obj}`];
             }
             if (condBlock.type === 'logic_and') {
                 return evaluateCondition(bCtx, condBlock.getInputTargetBlock('A')) && evaluateCondition(bCtx, condBlock.getInputTargetBlock('B'));
@@ -2648,14 +2747,23 @@
 
         function updateSensorVisuals() {
             botContexts.forEach(bCtx => {
+                bCtx.prevVisionMap = bCtx.visionMap || {};
+                bCtx.visionMap = {};
                 bCtx.activeSensors = {};
-                const objs = ['BALL', 'WALL', 'ENEMY', 'ENEMY_GOAL', 'OWN_GOAL', 'TEAMMATE'];
+                
+                const objs = ['BALL', 'WALL', 'ENEMY', 'ENEMY_GOAL', 'OWN_GOAL', 'TEAMMATE', 'TEAMMATE_1', 'TEAMMATE_2', 'TEAMMATE_3'];
+                
+                objs.forEach(o => {
+                    bCtx.visionMap[`ANY_${o}`] = checkVision(bCtx, 'ANY', o);
+                });
+
                 allSensors.filter(s => s.botId === bCtx.bot.botId).forEach(s => {
                     bCtx.activeSensors[s.id] = false;
                     for(let o of objs) {
-                        if(checkVision(bCtx, s.id, o)) {
+                        let sees = checkVision(bCtx, s.id, o);
+                        bCtx.visionMap[`${s.id}_${o}`] = sees;
+                        if(sees) {
                             bCtx.activeSensors[s.id] = true;
-                            break;
                         }
                     }
                 });
@@ -2663,17 +2771,39 @@
         }
 
         function executeScriptTick() {
+            let pSignals = {};
+            let eSignals = {};
+            botContexts.forEach(bCtx => {
+                if (bCtx.bot.sentSignals && bCtx.bot.sentSignals.length > 0) {
+                    bCtx.bot.sentSignals.forEach(sig => {
+                        if (bCtx.isEnemy) eSignals[sig] = true;
+                        else pSignals[sig] = true;
+                    });
+                    bCtx.bot.sentSignals = [];
+                }
+            });
+
             botContexts.forEach(bCtx => {
                 bCtx.bot.isMovingFast = false;
                 bCtx.bot.isMovingNormal = false;
 
                 bCtx.triggers.forEach(block => {
                     let triggered = false;
+                    let isImmediate = false;
                     
-                    if (block.type === 'event_sensor_sees') {
+                    if (block.type === 'event_sensor_sees' || block.type === 'event_sensor_lost') {
                         let sensor = block.getFieldValue('SENSOR');
                         let obj = block.getFieldValue('OBJECT');
-                        triggered = checkVision(bCtx, sensor, obj);
+                        let mode = block.getFieldValue('MODE') || 'WAIT';
+                        isImmediate = (mode === 'IMMEDIATE');
+                        
+                        let isSeen = bCtx.visionMap[`${sensor}_${obj}`];
+                        if (block.type === 'event_sensor_sees') {
+                            triggered = isSeen;
+                        } else {
+                            let wasSeen = bCtx.prevVisionMap[`${sensor}_${obj}`];
+                            triggered = !isSeen && wasSeen; // Nur wahr im Exakten Moment des Verlassens!
+                        }
                     } else if (block.type === 'event_battery_level') {
                         let op = block.getFieldValue('OP');
                         let val = evaluateNumber(bCtx, block, 'VAL', 50);
@@ -2683,14 +2813,31 @@
                         else if (op === 'EQ') triggered = Math.abs(bat - val) < 1;
                     } else if (block.type === 'event_battery_charging') {
                         triggered = bCtx.bot.isCharging;
+                    } else if (block.type === 'event_receive_signal') {
+                        let sig = block.getFieldValue('SIGNAL');
+                        let mode = block.getFieldValue('MODE') || 'WAIT';
+                        isImmediate = (mode === 'IMMEDIATE');
+                        triggered = bCtx.isEnemy ? eSignals[sig] : pSignals[sig];
                     }
 
                     if (triggered) {
-                        let isRunning = bCtx.threads.some(t => t.id === block.id);
-                        if (!isRunning) {
+                        let threadIdx = bCtx.threads.findIndex(t => t.id === block.id);
+                        let isRunning = threadIdx !== -1;
+                        
+                        if (isImmediate) {
+                            if (isRunning) {
+                                bCtx.threads.splice(threadIdx, 1); // Alten Ablauf hart abbrechen
+                            }
                             let next = block.getNextBlock();
                             if (next) {
                                 bCtx.threads.push({ id: block.id, stack: [{ block: next }], currentAction: null });
+                            }
+                        } else {
+                            if (!isRunning) { // Wartet brav bis der Block komplett fertig abgearbeitet wurde
+                                let next = block.getNextBlock();
+                                if (next) {
+                                    bCtx.threads.push({ id: block.id, stack: [{ block: next }], currentAction: null });
+                                }
                             }
                         }
                     }
@@ -2803,10 +2950,15 @@
                     if(currentMode === 'LAB') targets.push(bCtx.isEnemy ? testRobot : testEnemy);
                     else targets.push(...(bCtx.isEnemy ? pvePlayerBots : pveEnemyBots));
                 }
-                if (targetType === 'TEAMMATE') {
-                    if (currentMode === 'PVE' || currentMode === 'PVP') {
-                        let myTeam = bCtx.isEnemy ? pveEnemyBots : pvePlayerBots;
+                if (targetType.startsWith('TEAMMATE')) {
+                    let myTeam = currentMode === 'LAB' ? (bCtx.isEnemy ? [testEnemy] : [testRobot]) : (bCtx.isEnemy ? pveEnemyBots : pvePlayerBots);
+                    if (targetType === 'TEAMMATE') {
                         targets.push(...myTeam.filter(t => t.botId !== bot.botId));
+                    } else {
+                        let tmIndex = parseInt(targetType.split('_')[1]) - 1;
+                        let targetBotId = bCtx.isEnemy ? tmIndex + 3 : tmIndex;
+                        let specificMate = myTeam.find(t => t.botId === targetBotId);
+                        if (specificMate && specificMate.botId !== bot.botId) targets.push(specificMate);
                     }
                 }
                 if (targetType === 'ENEMY_GOAL' || targetType === 'OWN_GOAL') {
@@ -2867,6 +3019,13 @@
             }
             else if (type === 'set_magnet') {
                 bot.magnetOn = block.getFieldValue('STATE') === 'TRUE';
+                let next = block.getNextBlock();
+                if(next) thread.stack.push({ block: next });
+            }
+            else if (type === 'send_signal') {
+                let sig = block.getFieldValue('SIGNAL');
+                bot.sentSignals = bot.sentSignals || [];
+                if (!bot.sentSignals.includes(sig)) bot.sentSignals.push(sig);
                 let next = block.getNextBlock();
                 if(next) thread.stack.push({ block: next });
             }
@@ -3898,9 +4057,9 @@
             pvePlayerBots = [];
             pveEnemyBots = [];
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
                 let eWeight = guestTeamData.teams[i] ? guestTeamData.teams[i].weight : 5;
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: guestTeamData.teams[i].name });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: guestTeamData.teams[i].name, sentSignals: [] });
             }
 
             transitionToPvPBoard();
@@ -3925,8 +4084,8 @@
             pveEnemyBots = [];
             for(let i=0; i<3; i++) {
                 // Gast spiegelt: pvePlayerBots (Host-Bots) // pveEnemyBots (Eigene Bots)
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: guestTeamData.teams[i]?.name || "Host-Bot" });
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: teams[i].name });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: guestTeamData.teams[i]?.name || "Host-Bot", sentSignals: [] });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: teams[i].name, sentSignals: [] });
             }
             
             pveState.ticks = 90 * 60;
