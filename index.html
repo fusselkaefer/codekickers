@@ -3100,10 +3100,10 @@
                 let act = thread.currentAction;
                 let weightSpeedFactor = 1.0 - (bot.weight - 5) * 0.08; 
 
-                if (act.type.includes('move_fwd') || act.type.includes('move_bwd') || act.type === 'kick') {
+                if (['move_fwd', 'move_bwd', 'sprint_fwd', 'sprint_bwd', 'kick'].includes(act.type)) {
                     act.ticks--;
 
-                    if (act.type.includes('move_fwd') || act.type.includes('move_bwd')) {
+                    if (['move_fwd', 'move_bwd', 'sprint_fwd', 'sprint_bwd'].includes(act.type)) {
                         let speed = 1.2 * weightSpeedFactor;
                         
                         if (act.sprint && bot.battery > 0) {
@@ -3113,7 +3113,7 @@
                             bot.isMovingNormal = true;
                         }
 
-                        if (act.type.includes('move_fwd')) {
+                        if (act.type.includes('fwd')) {
                             bot.x += Math.cos(bot.angle) * speed;
                             bot.y += Math.sin(bot.angle) * speed;
                         } else {
@@ -3155,7 +3155,7 @@
             let block = stackItem.block;
             let type = block.type;
 
-            if (type.includes('move_fwd') || type.includes('move_bwd')) {
+            if (['move_fwd', 'move_bwd', 'sprint_fwd', 'sprint_bwd'].includes(type)) {
                 let steps = evaluateNumber(bCtx, block, 'STEPS', 1);
                 let isSprint = type.includes('sprint');
                 let baseTicks = isSprint ? 20 : 40; 
