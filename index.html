@@ -93,10 +93,22 @@
                 <option value="en">🇬🇧 EN</option>
                 <option value="de">🇩🇪 DE</option>
             </select>
-            <!-- Privacy Button -->
-            <button onclick="openPrivacyModal()" id="privacyBtn" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 shadow flex items-center justify-center text-xl transition-all" title="Datenschutz & DSGVO">🛡️</button>
             <!-- Settings Button -->
             <button onclick="openSettingsModal()" id="settingsBtn" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 shadow flex items-center justify-center text-xl transition-all" title="Team Settings">🎨</button>
+            
+            <!-- System Menu Dropdown -->
+            <div class="relative">
+                <button onclick="toggleSystemMenu()" id="menuBtn" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 shadow flex items-center justify-center text-xl transition-all" title="Menu">☰</button>
+                
+                <!-- Invisible Overlay for closing -->
+                <div id="systemMenuOverlay" onclick="toggleSystemMenu()" class="hidden fixed inset-0 z-40"></div>
+                
+                <!-- Dropdown Content -->
+                <div id="systemMenuDropdown" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-600 rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden transform origin-top-right transition-all">
+                    <button onclick="openPrivacyModal(); toggleSystemMenu()" class="text-left px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors border-b border-slate-700" data-i18n="privacyTitle">Datenschutz & Impressum</button>
+                    <button onclick="resetGame()" class="text-left px-4 py-3 text-sm text-red-400 hover:bg-red-600 hover:text-white transition-colors font-bold" data-i18n="btnReset">Spiel Zurücksetzen</button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -629,12 +641,286 @@
         </div>
     </div>
 
+    <!-- Confirm Reset Modal -->
+    <div id="confirmResetModal" class="hidden absolute inset-0 z-[60] bg-black/80 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-slate-900 p-6 rounded-xl border border-red-900 shadow-[0_0_30px_rgba(220,38,38,0.2)] w-80 text-center">
+            <div class="text-5xl mb-4 animate-bounce">⚠️</div>
+            <p id="confirmResetText" class="text-white text-sm font-bold mb-6" data-i18n="confirmReset"></p>
+            <div class="flex gap-2 justify-center">
+                <button onclick="closeConfirmResetModal(false)" class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded font-bold text-white transition-colors" data-i18n="cancelBtn">Abbrechen</button>
+                <button onclick="closeConfirmResetModal(true)" class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 rounded font-bold text-white shadow transition-colors" data-i18n="btnReset">Zurücksetzen</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- DATA LAYER, I18N & DB ---
         let currentMode = 'LAB';
         let db;
         const DB_NAME = "RoboBallerDB";
         let isLoadingData = true;
+
+        // --- SOUND ENGINE (Web Audio API Synthesizer) ---
+        const SoundEngine = {
+            ctx: null, masterGain: null, lastKick: 0, lastBump: 0, lastBotSound: 0, frameTriggers: [],
+            audienceInitialized: false,
+            
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = 0.4; // 40% Master Volume
+                    this.masterGain.connect(this.ctx.destination);
+                    this.initContinuousLoops();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            },
+
+            initContinuousLoops: function() {
+                if (this.audienceInitialized) return;
+                this.audienceInitialized = true;
+                
+                // 1. Audience Loop (White Noise mit dynamischem Filter)
+                let bufferSize = this.ctx.sampleRate * 2; 
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1; 
+                
+                this.audienceSource = this.ctx.createBufferSource();
+                this.audienceSource.buffer = buffer;
+                this.audienceSource.loop = true;
+                
+                this.audienceFilter = this.ctx.createBiquadFilter();
+                this.audienceFilter.type = 'lowpass';
+                this.audienceFilter.frequency.value = 300; // Ruhiges, tiefes Rauschen
+                
+                this.audienceGain = this.ctx.createGain();
+                this.audienceGain.gain.value = 0; 
+                
+                this.audienceSource.connect(this.audienceFilter);
+                this.audienceFilter.connect(this.audienceGain);
+                this.audienceGain.connect(this.masterGain);
+                this.audienceSource.start();
+            },
+
+            updateDynamics: function(ballX, ballY, bots, cW, cH) {
+                if (!this.ctx || !this.audienceInitialized) return;
+                const now = this.ctx.currentTime;
+
+                // --- Audience Tension (Je näher am Tor, desto lauter/aufgeregter) ---
+                let distLeft = ballX;
+                let distRight = cW - ballX;
+                let distGoal = Math.min(distLeft, distRight);
+                
+                let tension = 1.0 - Math.min(1.0, distGoal / (cW * 0.4)); // 0 = Mitte, 1 = Torlinie
+                
+                // Trubel nur, wenn Ball auch in der Höhe des Tores ist (Y-Achse)
+                let isGoalY = (ballY > cH/2 - 100 && ballY < cH/2 + 100);
+                if (!isGoalY) tension *= 0.3; 
+
+                let targetFreq = 300 + tension * 2000;
+                let targetGain = 0.02 + tension * 0.15;
+                
+                this.audienceFilter.frequency.setTargetAtTime(targetFreq, now, 0.5); 
+                this.audienceGain.gain.setTargetAtTime(targetGain, now, 0.5);
+            },
+
+            muteContinuous: function() {
+                if (!this.ctx || !this.audienceInitialized) return;
+                const now = this.ctx.currentTime;
+                this.audienceGain.gain.setTargetAtTime(0, now, 0.1);
+            },
+            
+            // --- R2D2 BOT EMOTION SYNTHS ---
+            playBotHappy: function() {
+                this.frameTriggers.push('bh');
+                this._playBotHappyLocal();
+            },
+            _playBotHappyLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
+                this.lastBotSound = this.ctx.currentTime;
+                let t = this.ctx.currentTime;
+                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
+                
+                osc.frequency.setValueAtTime(1200, t);
+                osc.frequency.setValueAtTime(1600, t + 0.1);
+                osc.frequency.setValueAtTime(2100, t + 0.2);
+                osc.frequency.setValueAtTime(2800, t + 0.3);
+                
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
+                gain.gain.setValueAtTime(0.4, t + 0.3); gain.gain.linearRampToValueAtTime(0, t + 0.4);
+                osc.start(t); osc.stop(t + 0.4);
+            },
+
+            playBotSad: function() {
+                this.frameTriggers.push('bs');
+                this._playBotSadLocal();
+            },
+            _playBotSadLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
+                this.lastBotSound = this.ctx.currentTime;
+                let t = this.ctx.currentTime;
+                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
+                
+                osc.frequency.setValueAtTime(800, t);
+                osc.frequency.exponentialRampToValueAtTime(250, t + 0.8);
+                
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.4, t + 0.1);
+                gain.gain.setValueAtTime(0.4, t + 0.6); gain.gain.linearRampToValueAtTime(0, t + 0.8);
+                osc.start(t); osc.stop(t + 0.8);
+            },
+
+            playBotAngry: function() {
+                this.frameTriggers.push('ba');
+                this._playBotAngryLocal();
+            },
+            _playBotAngryLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
+                this.lastBotSound = this.ctx.currentTime;
+                let t = this.ctx.currentTime;
+                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+                osc.type = 'square'; osc.connect(gain); gain.connect(this.masterGain);
+                
+                osc.frequency.setValueAtTime(900, t);
+                osc.frequency.setValueAtTime(300, t + 0.06);
+                osc.frequency.setValueAtTime(1100, t + 0.12);
+                osc.frequency.setValueAtTime(250, t + 0.18);
+                
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
+                gain.gain.setValueAtTime(0.2, t + 0.2); gain.gain.linearRampToValueAtTime(0, t + 0.25);
+                osc.start(t); osc.stop(t + 0.25);
+            },
+
+            playBotConfused: function() {
+                this.frameTriggers.push('bc');
+                this._playBotConfusedLocal();
+            },
+            _playBotConfusedLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
+                this.lastBotSound = this.ctx.currentTime;
+                let t = this.ctx.currentTime;
+                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
+                
+                osc.frequency.setValueAtTime(600, t);
+                osc.frequency.linearRampToValueAtTime(1200, t + 0.25);
+                osc.frequency.linearRampToValueAtTime(600, t + 0.5);
+                
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.1);
+                gain.gain.setValueAtTime(0.3, t + 0.4); gain.gain.linearRampToValueAtTime(0, t + 0.5);
+                osc.start(t); osc.stop(t + 0.5);
+            },
+
+            // --- STANDARD SFX ---
+            playKick: function() {
+                this.frameTriggers.push('k');
+                this._playKickLocal();
+            },
+            
+            _playKickLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastKick < 0.1) return;
+                this.lastKick = this.ctx.currentTime;
+                
+                // 1. Tiefer Sub-Thump (Körperhafter Kick)
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(1.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+
+                // 2. Harter Snap (Noise Burst für den Aufprall)
+                let bufferSize = this.ctx.sampleRate * 0.05; 
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                let noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                let noiseFilter = this.ctx.createBiquadFilter();
+                noiseFilter.type = 'bandpass';
+                noiseFilter.frequency.value = 800;
+                let noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(this.masterGain);
+                noise.start(); noise.stop(this.ctx.currentTime + 0.05);
+            },
+            
+            playBump: function() {
+                this.frameTriggers.push('b');
+                this._playBumpLocal();
+            },
+            
+            _playBumpLocal: function() {
+                if (!this.ctx || this.ctx.currentTime - this.lastBump < 0.1) return;
+                this.lastBump = this.ctx.currentTime;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                let filter = this.ctx.createBiquadFilter();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(80, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                filter.type = 'lowpass'; filter.frequency.value = 300;
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(filter); filter.connect(gain); gain.connect(this.masterGain);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+            },
+            
+            playWhistle: function(short = false) {
+                if (!this.ctx) return;
+                let dur = short ? 0.3 : 0.6;
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                let vib = this.ctx.createOscillator();
+                let vibGain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(2000, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(2200, this.ctx.currentTime + dur * 0.2);
+                osc.frequency.linearRampToValueAtTime(2000, this.ctx.currentTime + dur);
+                
+                vib.frequency.value = 40; vibGain.gain.value = 100;
+                vib.connect(vibGain); vibGain.connect(osc.frequency);
+                
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.7, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.7, this.ctx.currentTime + dur - 0.1);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + dur);
+                
+                osc.connect(gain); gain.connect(this.masterGain);
+                osc.start(); vib.start(); osc.stop(this.ctx.currentTime + dur); vib.stop(this.ctx.currentTime + dur);
+            },
+            
+            playCheer: function() {
+                if (!this.ctx) return;
+                let bufferSize = this.ctx.sampleRate * 4; 
+                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                let data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1; // White noise
+                
+                let noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                let filter1 = this.ctx.createBiquadFilter(); filter1.type = 'lowpass'; filter1.frequency.value = 2500;
+                let filter2 = this.ctx.createBiquadFilter(); filter2.type = 'highpass'; filter2.frequency.value = 500;
+                
+                let gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 0.5);
+                gain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 2.5);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 4.0);
+                
+                noise.connect(filter1); filter1.connect(filter2); filter2.connect(gain); gain.connect(this.masterGain);
+                noise.start();
+            }
+        };
 
         // --- PVP & MATCH STATE ---
         let peer = null;
@@ -665,14 +951,13 @@
                 teamColorLabel: "Team Color", teamAltColorLabel: "Alternate Color", cancelBtn: "Cancel", saveBtn: "Save", presetsTitle: "Load Code Preset",
                 logoMakerTitle: "Logo Maker", toggleTextColor: "Color", logoHint: "Max 3 letters or 1 emoji.",
                 closeBtn: "Close", simRunTitle: "Simulation running...", simRunSub: "Both robots are executing your code!",
-                goal: "GOAL!", matchEnd: "MATCH END", halfTime: "HALF TIME", switchingSides: "Switching sides...",
+                goal: "GOAL!", matchEnd: "MATCH END", halfTime: "HALF TIME", switchingSides: "Switching sides...", stalemate: "STALEMATE", newKickoff: "Corner Timeout - New Kickoff",
                 draw: "DRAW!", wins: "WINS!", envScored: "Environment Scored!", youScored: "You Scored!", teamScored: " scored!",
                 weightTooltip: "Weight: ", noPresets: "No presets saved yet.", loadBtn: "Load", deleteBtn: "Delete",
                 promptPreset: "Enter a name for this code preset:", presetSaved: "Code saved successfully as a preset!",
                 invalidFile: "Invalid file format!", environment: "Environment",
                 colorBlue: "Blue", colorRed: "Red", colorGreen: "Green", colorPurple: "Purple", colorYellow: "Yellow",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "White", colorGray: "Gray",
-                teamBlue: "Team Blue", teamRed: "Team Red",
                 // Blockly
                 catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators", catComms: "Communication",
                 optBall: "Ball", optAny: "Any Sensor", optWall: "Wall", optEnemy: "Enemy", optTeammate: "Teammate", optTeammateAny: "Any Teammate", optEnemyGoal: "Enemy Goal", optOwnGoal: "Own Goal",
@@ -701,6 +986,7 @@
                 leagueTitle: "CodeKickers League", startSeason: "Start New Season", standings: "Standings", matchday: "Matchday", playMatchBtn: "Play Match",
                 seasonComplete: "Season Finished!", finalRank: "Your Final Rank: ", pts: "Pts", continueBtn: "Continue",
                 // DSGVO Privacy Modals
+                btnReset: "Factory Reset", confirmReset: "Are you sure you want to delete all progress, teams, and codes? This cannot be undone!", menuTitle: "Menu",
                 privacyTitle: "Privacy & Imprint",
                 privacyText: `
                     <div>
@@ -783,14 +1069,13 @@
                 teamColorLabel: "Team Farbe", teamAltColorLabel: "Ausweichfarbe", cancelBtn: "Abbrechen", saveBtn: "Speichern", presetsTitle: "Code Vorlage Laden",
                 logoMakerTitle: "Team Logo Maker", toggleTextColor: "Farbe", logoHint: "Max. 3 Buchstaben oder 1 Emoji.",
                 closeBtn: "Schließen", simRunTitle: "Simulation läuft...", simRunSub: "Roboter führen ihren Code aus!",
-                goal: "TOR!", matchEnd: "MATCH ENDE", halfTime: "HALBZEIT", switchingSides: "Seitenwechsel...",
+                goal: "TOR!", matchEnd: "MATCH ENDE", halfTime: "HALBZEIT", switchingSides: "Seitenwechsel...", stalemate: "BLOCKIERT", newKickoff: "Ecken-Timeout - Neuer Anstoß",
                 draw: "UNENTSCHIEDEN!", wins: "GEWINNT!", envScored: "Gegner hat getroffen!", youScored: "Du hast getroffen!", teamScored: " hat getroffen!",
                 weightTooltip: "Gewicht: ", noPresets: "Noch keine Vorlagen gespeichert.", loadBtn: "Laden", deleteBtn: "Löschen",
                 promptPreset: "Gib einen Namen für diesen Code-Preset ein:", presetSaved: "Code erfolgreich als Vorlage gesichert!",
                 invalidFile: "Ungültige Datei!", environment: "Umgebung",
                 colorBlue: "Blau", colorRed: "Rot", colorGreen: "Grün", colorPurple: "Lila", colorYellow: "Gelb",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "Weiß", colorGray: "Grau",
-                teamBlue: "Team Blau", teamRed: "Team Rot",
                 // Blockly
                 catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren", catComms: "Kommunikation",
                 optBall: "Ball", optAny: "Irgendein Sensor", optWall: "Wand", optEnemy: "Gegner", optTeammate: "Teammitglied", optTeammateAny: "Irgendein Teammitglied", optEnemyGoal: "Gegnerisches Tor", optOwnGoal: "Eigenes Tor",
@@ -819,6 +1104,7 @@
                 leagueTitle: "CodeKickers League", startSeason: "Neue Saison starten", standings: "Tabelle", matchday: "Spieltag", playMatchBtn: "Spiel starten",
                 seasonComplete: "Saison Beendet!", finalRank: "Dein Endplatz: ", pts: "Pkt", continueBtn: "Weiter",
                 // DSGVO Privacy Modals
+                btnReset: "Spiel Zurücksetzen", confirmReset: "Möchtest du wirklich deinen gesamten Fortschritt, alle Teams und Codes löschen? Dies kann nicht rückgängig gemacht werden!", menuTitle: "Menü",
                 privacyTitle: "Datenschutz & Impressum",
                 privacyText: `
                     <div>
@@ -985,6 +1271,7 @@
             hideOverlay();
             simRunning = false;
             pveState.status = 'STOPPED';
+            SoundEngine.muteContinuous();
             
             if (currentMode === 'PVE') {
                 let btn = document.getElementById('btnPvEPlay');
@@ -1025,6 +1312,7 @@
             
             // Set dynamic button titles & labels
             document.getElementById('settingsBtn').title = t('settingsTitle');
+            document.getElementById('menuBtn').title = t('menuTitle');
             document.getElementById('importBtn').title = t('importBtn');
             document.getElementById('exportBtn').title = t('exportBtn');
             document.getElementById('saveCodeBtn').title = t('saveCodeBtn');
@@ -1054,11 +1342,11 @@
         let playerTeamColor = '#3b82f6';
         let playerAltColor = '#ffffff'; // Fallback falls PvP Host die gleiche Farbe hat
         let matchPlayerColor = '#3b82f6'; // Neu: dynamische Farbe für das aktuelle Match
-        let playerTeamName = t('teamBlue');
+        let playerTeamName = "CodeKickers";
         let playerLogo = { shape: 'shield', icon: 'CK', bgColor: '#3b82f6', fgColor: '#ffffff' };
         
         let enemyColor = '#ef4444';
-        let enemyTeamName = t('teamRed');
+        let enemyTeamName = "AI Bot";
         let enemyLogo = { shape: 'circle', icon: 'AI', bgColor: '#ef4444', fgColor: '#ffffff' };
 
         let tempSelectedColor = '';
@@ -1093,10 +1381,17 @@
         let draggingSensor = null;
         let dragStartPt = {x: 0, y: 0};
         
+        const DEFAULT_BOT_NAMES = [
+            "Billy", "Fiona", "Robin", "Alex", "Sam", "Mia", "Leo", "Emma", 
+            "Noah", "Zoe", "Luca", "Lara", "Finn", "Anna", "Max", "Sara", 
+            "Tim", "Lisa", "Ben", "Marie"
+        ];
+        let _shuffledNames = DEFAULT_BOT_NAMES.slice().sort(() => 0.5 - Math.random());
+        
         let teams = [
-            { id: 0, weight: 5, name: "Striker", workspaceJSON: null },
-            { id: 1, weight: 6, name: "Defender", workspaceJSON: null },
-            { id: 2, weight: 4, name: "Scout", workspaceJSON: null }
+            { id: 0, weight: 5, name: _shuffledNames[0], workspaceJSON: null },
+            { id: 1, weight: 6, name: _shuffledNames[1], workspaceJSON: null },
+            { id: 2, weight: 4, name: _shuffledNames[2], workspaceJSON: null }
         ];
         
         let currentRobotId = 0;
@@ -1901,7 +2196,7 @@
             let availableHexes = Object.keys(TEAM_COLORS);
             let fallback = availableHexes.find(h => h !== playerTeamColor) || '#ef4444';
             enemyColor = (playerTeamColor !== '#ef4444') ? '#ef4444' : '#3b82f6';
-            enemyTeamName = "Team " + t(TEAM_COLORS[enemyColor]);
+            enemyTeamName = "AI Bot";
             enemyLogo = { shape: 'circle', icon: 'AI', bgColor: enemyColor, fgColor: '#ffffff' };
         }
 
@@ -1931,6 +2226,11 @@
         }
 
         function openSettingsModal() {
+            if (pveState.status !== 'STOPPED' || pvpMatchInProgress) {
+                customAlert(t('matchInProgressMsg'));
+                return;
+            }
+            
             document.getElementById('teamNameInput').value = playerTeamName;
             tempSelectedColor = playerTeamColor;
             tempAltColor = playerAltColor;
@@ -2537,6 +2837,7 @@
             half: 1,
             scorePlayer: 0,
             scoreEnemy: 0,
+            cornerTicks: 0,
             goals: []
         };
         let pveWorld = { width: 800, height: 400 }; 
@@ -2606,6 +2907,9 @@
             let blocker = document.getElementById('blocklyBlocker');
 
             if(simRunning) {
+                SoundEngine.init();
+                SoundEngine.playWhistle(false);
+                
                 btn.innerHTML = t('stopBtn');
                 btn.classList.replace('bg-green-600', 'bg-red-600');
                 btn.classList.replace('hover:bg-green-500', 'hover:bg-red-500');
@@ -2630,6 +2934,7 @@
                 overlayCountdown = 0;
                 hideOverlay();
                 botContexts = []; 
+                SoundEngine.muteContinuous();
                 drawSim();
             }
         }
@@ -2639,6 +2944,9 @@
             let btn = document.getElementById('btnPvEPlay');
 
             if(simRunning) {
+                SoundEngine.init();
+                SoundEngine.playWhistle(false);
+                
                 btn.innerHTML = t('matchStopBtn');
                 btn.classList.replace('bg-green-600', 'bg-red-600');
                 btn.classList.replace('hover:bg-green-500', 'hover:bg-red-500');
@@ -2659,6 +2967,7 @@
                 pveState.status = 'STOPPED';
                 hideOverlay();
                 botContexts = []; 
+                SoundEngine.muteContinuous();
                 drawSim();
 
                 if (isLeagueMatch) {
@@ -2783,6 +3092,7 @@ function resetSim() {
             pveBall.vx = 0;
             pveBall.vy = 0;
             pveBall.lastTouch = null;
+            pveState.cornerTicks = 0;
 
             let flip = pveState.half === 2;
             let pX = flip ? pveWorld.width - 100 : 100;
@@ -2873,6 +3183,11 @@ function resetSim() {
         }
 
         function triggerGoal(msg) {
+            SoundEngine.playWhistle(true);
+            setTimeout(() => SoundEngine.playWhistle(true), 400); // Doppelpfiff für Tor
+            SoundEngine.playCheer();
+            SoundEngine.playBotHappy(); // Roboter jubeln!
+            
             if(currentMode === 'LAB') {
                 overlayCountdown = 180;
                 resetSim();
@@ -3449,6 +3764,7 @@ function resetSim() {
             while(relA < -Math.PI) relA += Math.PI*2;
 
             if(dist < bot.r + ball.r + 15 && Math.abs(relA) < 0.8) {
+                SoundEngine.playKick();
                 ball.lastTouch = bot;
                 // Leichte Zufälligkeit für Winkel (± 4 Grad) und Schusskraft (± 5%)
                 let kickAngle = bot.angle + (Math.random() - 0.5) * 0.15;
@@ -3470,6 +3786,7 @@ function resetSim() {
                 while(brelA < -Math.PI) brelA += Math.PI*2;
 
                 if(bdist < bot.r + otherBot.r + 15 && Math.abs(brelA) < 0.8) {
+                    SoundEngine.playBump();
                     // Auch beim Rammen leichte Varianz hinzufügen
                     let bumpAngle = bot.angle + (Math.random() - 0.5) * 0.1;
                     let kickForce = (15 + (bot.weight - otherBot.weight) * 2.0) * (0.95 + Math.random() * 0.1);
@@ -3480,6 +3797,7 @@ function resetSim() {
 
                     if (otherBot.weight < bot.weight && otherBot.magnetOn) {
                         otherBot.magnetOn = false;
+                        SoundEngine.playBotAngry(); // Roboter regt sich extrem über den Rempler und Ballverlust auf!
                     }
                 }
             }
@@ -3641,6 +3959,30 @@ function resetSim() {
             for(let bot of bots) {
                 bot.x = Math.max(bot.r, Math.min(cW - bot.r, bot.x));
                 bot.y = Math.max(bot.r, Math.min(cH - bot.r, bot.y));
+            }
+
+            // 10s Corner Rule Logic (nur in PVE/PVP)
+            if (currentMode === 'PVE' || (currentMode === 'PVP' && isPvPHost)) {
+                let inCorner = false;
+                let cornerR = 50;
+                
+                if (ball.x < cornerR && ball.y < cornerR && Math.hypot(ball.x, ball.y) < cornerR) inCorner = true;
+                else if (ball.x > cW - cornerR && ball.y < cornerR && Math.hypot(ball.x - cW, ball.y) < cornerR) inCorner = true;
+                else if (ball.x < cornerR && ball.y > cH - cornerR && Math.hypot(ball.x, ball.y - cH) < cornerR) inCorner = true;
+                else if (ball.x > cW - cornerR && ball.y > cH - cornerR && Math.hypot(ball.x - cW, ball.y - cH) < cornerR) inCorner = true;
+
+                if (inCorner) {
+                    pveState.cornerTicks = (pveState.cornerTicks || 0) + 1;
+                    if (pveState.cornerTicks >= 600) { // 10 Sekunden (60 Ticks/Sekunde)
+                        pveState.cornerTicks = 0;
+                        SoundEngine.playWhistle(true);
+                        SoundEngine.playBotConfused(); // Verwirrter Bot-Sound weil es nicht weitergeht
+                        showMatchOverlay(t('stalemate'), t('newKickoff'), 180);
+                        return;
+                    }
+                } else {
+                    pveState.cornerTicks = 0;
+                }
             }
         }
 
@@ -3838,6 +4180,29 @@ function resetSim() {
                 ctx.beginPath(); ctx.moveTo(cW/2, 0); ctx.lineTo(cW/2, cH); ctx.stroke();
                 ctx.beginPath(); ctx.arc(cW/2, cH/2, 60, 0, Math.PI*2); ctx.stroke();
 
+                // Draw Corner Zones
+                let cornerR = 50;
+                ctx.beginPath(); ctx.arc(0, 0, cornerR, 0, Math.PI/2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cW, 0, cornerR, Math.PI/2, Math.PI); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cW, cH, cornerR, Math.PI, Math.PI*1.5); ctx.stroke();
+                ctx.beginPath(); ctx.arc(0, cH, cornerR, Math.PI*1.5, Math.PI*2); ctx.stroke();
+                
+                // Highlight Corner if ball is trapped
+                let cTicks = pveState.cornerTicks || 0;
+                if (cTicks > 0) {
+                    let cx = ball.x < cW/2 ? 0 : cW;
+                    let cy = ball.y < cH/2 ? 0 : cH;
+                    let startA = 0, endA = 0;
+                    if (cx === 0 && cy === 0) { startA = 0; endA = Math.PI/2; }
+                    else if (cx === cW && cy === 0) { startA = Math.PI/2; endA = Math.PI; }
+                    else if (cx === cW && cy === cH) { startA = Math.PI; endA = Math.PI*1.5; }
+                    else if (cx === 0 && cy === cH) { startA = Math.PI*1.5; endA = Math.PI*2; }
+
+                    ctx.fillStyle = `rgba(239, 68, 68, ${0.1 + (cTicks/600)*0.5})`; // Fills/glows red
+                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, cornerR, startA, endA); ctx.closePath();
+                    ctx.fill();
+                }
+
                 let hColor, gColor; 
                 if (currentMode === 'PVP') { hColor = pvpHostColor; gColor = pvpGuestColor; } 
                 else { hColor = matchPlayerColor; gColor = enemyColor; }
@@ -3980,6 +4345,7 @@ function resetSim() {
 
         function simLoop(timestamp) {
             if(!simRunning) return;
+            SoundEngine.frameTriggers = [];
 
             if (!lastFrameTime) lastFrameTime = timestamp;
             const frameTime = 1000 / 60; // 60 FPS Target
@@ -3987,6 +4353,17 @@ function resetSim() {
 
             if (deltaTime >= frameTime) {
                 lastFrameTime = timestamp - (deltaTime % frameTime);
+
+                // --- Sound Dynamics Update ---
+                if (simRunning && (currentMode === 'LAB' || pveState.status === 'PLAYING' || pveState.status === 'OVERLAY')) {
+                    let bots = currentMode === 'LAB' ? [testRobot, testEnemy] : pvePlayerBots.concat(pveEnemyBots);
+                    let cW = currentMode === 'LAB' ? testWorld.width : pveWorld.width;
+                    let cH = currentMode === 'LAB' ? testWorld.height : pveWorld.height;
+                    let ball = currentMode === 'LAB' ? testBall : pveBall;
+                    SoundEngine.updateDynamics(ball.x, ball.y, bots, cW, cH);
+                } else {
+                    SoundEngine.muteContinuous();
+                }
 
                 if (currentMode === 'LAB') {
                     if (overlayCountdown > 0) {
@@ -4004,6 +4381,7 @@ function resetSim() {
                             pveState.status = 'PLAYING';
                             resetPvEPositions();
                             initThreads();
+                            SoundEngine.playWhistle(true);
                         }
                     } else if (pveState.status === 'MATCH_END_OVERLAY') {
                         // Warte auf Klick vom User
@@ -4018,6 +4396,14 @@ function resetSim() {
                                 showMatchOverlay(t('halfTime'), t('switchingSides'), 180);
                             } else {
                                 let msg = pveState.scorePlayer > pveState.scoreEnemy ? (playerTeamName + " " + t('wins')) : (pveState.scoreEnemy > pveState.scorePlayer ? (enemyTeamName + " " + t('wins')) : t('draw'));
+                                
+                                // Emotionale Reaktion auf den Match-Ausgang!
+                                let pWon = pveState.scorePlayer > pveState.scoreEnemy;
+                                let eWon = pveState.scoreEnemy > pveState.scorePlayer;
+                                if (pWon) SoundEngine.playBotHappy();
+                                else if (eWon) SoundEngine.playBotSad();
+                                else SoundEngine.playBotConfused();
+
                                 showMatchOverlay(t('matchEnd'), msg, 300);
                             }
                         }
@@ -4038,6 +4424,7 @@ function resetSim() {
                                 pveState.status = 'PLAYING';
                                 resetPvEPositions();
                                 initThreads();
+                                SoundEngine.playWhistle(true);
                             }
                         } else if (pveState.status === 'MATCH_END_OVERLAY') {
                             // Warte auf Klick vom Host
@@ -4054,6 +4441,12 @@ function resetSim() {
                                     let hostWon = pveState.scorePlayer > pveState.scoreEnemy;
                                     let guestWon = pveState.scoreEnemy > pveState.scorePlayer;
                                     let msg = hostWon ? (playerTeamName + " " + t('wins')) : (guestWon ? (guestTeamData.teamName + " " + t('wins')) : t('draw'));
+                                    
+                                    // Emotionale Reaktion auf den Match-Ausgang!
+                                    if (hostWon) SoundEngine.playBotHappy();
+                                    else if (guestWon) SoundEngine.playBotSad();
+                                    else SoundEngine.playBotConfused();
+
                                     showMatchOverlay(t('matchEnd'), msg, 300);
                                 }
                             }
@@ -4069,11 +4462,11 @@ function resetSim() {
                         if (pvpConn && pvpConn.open) {
                             let syncP = pvePlayerBots.map((b, i) => {
                                 let act = Object.keys(botContexts[i*2].activeSensors || {}).filter(k => botContexts[i*2].activeSensors[k]);
-                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act};
+                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn};
                             });
                             let syncE = pveEnemyBots.map((b, i) => {
                                 let act = Object.keys(botContexts[i*2+1].activeSensors || {}).filter(k => botContexts[i*2+1].activeSensors[k]);
-                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act};
+                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn};
                             });
 
                             pvpConn.send({
@@ -4083,7 +4476,9 @@ function resetSim() {
                                 e: syncE,
                                 sp: pveState.scorePlayer, se: pveState.scoreEnemy, t: pveState.ticks, h: pveState.half,
                                 st: pveState.status, oc: overlayCountdown, msg: document.getElementById('pvpMatchOverlaySub').innerText, msgTitle: document.getElementById('pvpMatchOverlayText').innerText,
-                                g: pveState.goals
+                                g: pveState.goals,
+                                ct: pveState.cornerTicks,
+                                snd: SoundEngine.frameTriggers
                             });
                         }
                     }
@@ -4292,6 +4687,17 @@ function resetSim() {
                 } else if (data.type === 'SYNC' && !isPvPHost) {
                     if (!pvpMatchInProgress) return;
                     
+                    if (data.snd) {
+                        data.snd.forEach(s => {
+                            if (s === 'k') SoundEngine._playKickLocal();
+                            if (s === 'b') SoundEngine._playBumpLocal();
+                            if (s === 'bh') SoundEngine._playBotHappyLocal();
+                            if (s === 'bs') SoundEngine._playBotSadLocal();
+                            if (s === 'ba') SoundEngine._playBotAngryLocal();
+                            if (s === 'bc') SoundEngine._playBotConfusedLocal();
+                        });
+                    }
+
                     pveBall.x = data.b.x;
                     pveBall.y = data.b.y;
                     
@@ -4299,6 +4705,7 @@ function resetSim() {
                     pveState.scoreEnemy = data.se;
                     pveState.ticks = data.t;
                     pveState.half = data.h;
+                    pveState.cornerTicks = data.ct;
                     
                     if (data.st === 'OVERLAY' || data.st === 'MATCH_END_OVERLAY') {
                         if (pveState.status !== data.st) {
@@ -4322,6 +4729,7 @@ function resetSim() {
                         if(pvePlayerBots[i]) {
                             pvePlayerBots[i].x = bd.x; pvePlayerBots[i].y = bd.y; pvePlayerBots[i].angle = bd.a; 
                             pvePlayerBots[i].battery = bd.bat; pvePlayerBots[i].isKicking = bd.kick;
+                            pvePlayerBots[i].isMovingFast = (bd.m === 2); pvePlayerBots[i].isMovingNormal = (bd.m === 1); pvePlayerBots[i].magnetOn = bd.mag;
                             pvePlayerBots[i].act = {};
                             if (bd.act) bd.act.forEach(a => pvePlayerBots[i].act[a] = true);
                         }
@@ -4330,6 +4738,7 @@ function resetSim() {
                         if(pveEnemyBots[i]) {
                             pveEnemyBots[i].x = bd.x; pveEnemyBots[i].y = bd.y; pveEnemyBots[i].angle = bd.a; 
                             pveEnemyBots[i].battery = bd.bat; pveEnemyBots[i].isKicking = bd.kick;
+                            pveEnemyBots[i].isMovingFast = (bd.m === 2); pveEnemyBots[i].isMovingNormal = (bd.m === 1); pveEnemyBots[i].magnetOn = bd.mag;
                             pveEnemyBots[i].act = {};
                             if (bd.act) bd.act.forEach(a => pveEnemyBots[i].act[a] = true);
                         }
@@ -4361,6 +4770,7 @@ function resetSim() {
             pvpMatchInProgress = false;
             simRunning = false;
             pveState.status = 'STOPPED';
+            SoundEngine.muteContinuous();
             cancelAnimationFrame(simLoopId);
             
             document.getElementById('pvpMatchUI').classList.add('hidden');
@@ -4386,6 +4796,9 @@ function resetSim() {
         function startPvPMatch() {
             if (!isPvPHost || !pvpConn || !guestTeamData) return;
             
+            SoundEngine.init();
+            SoundEngine.playWhistle(false);
+
             pvpConn.send({ type: 'START_MATCH' });
             
             pvePlayerBots = [];
@@ -4447,6 +4860,8 @@ function resetSim() {
         }
 
         function startClientMatch() {
+            SoundEngine.init();
+            
             pvePlayerBots = [];
             pveEnemyBots = [];
             
@@ -4503,6 +4918,42 @@ function resetSim() {
         window.onload = function() {
             initDBAndApp();
         };
+
+        function toggleSystemMenu() {
+            let menu = document.getElementById('systemMenuDropdown');
+            let overlay = document.getElementById('systemMenuOverlay');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function resetGame() {
+            toggleSystemMenu();
+            document.getElementById('confirmResetText').innerText = t('confirmReset');
+            document.getElementById('confirmResetModal').classList.remove('hidden');
+            document.getElementById('confirmResetModal').classList.add('flex');
+        }
+
+        function closeConfirmResetModal(confirmed) {
+            document.getElementById('confirmResetModal').classList.add('hidden');
+            document.getElementById('confirmResetModal').classList.remove('flex');
+            
+            if (confirmed) {
+                let req = indexedDB.deleteDatabase(DB_NAME);
+                req.onsuccess = function() {
+                    localStorage.clear();
+                    window.location.reload();
+                };
+                req.onerror = function() {
+                    localStorage.clear();
+                    window.location.reload();
+                };
+            }
+        }
 
         function toggleFullScreen() {
             let elem = document.documentElement;
