@@ -1037,6 +1037,7 @@
 
         let playerTeamColor = '#3b82f6';
         let playerAltColor = '#ffffff'; // Fallback falls PvP Host die gleiche Farbe hat
+        let matchPlayerColor = '#3b82f6'; // Neu: dynamische Farbe für das aktuelle Match
         let playerTeamName = t('teamBlue');
         let playerLogo = { shape: 'shield', icon: 'CK', bgColor: '#3b82f6', fgColor: '#ffffff' };
         
@@ -1359,9 +1360,13 @@
                 let enemyId = isHome ? playerMatch.away : playerMatch.home;
                 let enemyTeam = leagueState.teams.find(t => t.id === enemyId);
 
-                document.getElementById('leagueNextHomeLogo').innerHTML = getLogoSVG(isHome ? playerLogo : enemyTeam.logo);
+                // Vorschau-Farben mit Kollisionsprüfung (Ausweichfarbe)
+                let nextMatchPlayerColor = (enemyTeam.color === playerTeamColor) ? playerAltColor : playerTeamColor;
+                let nextMatchPlayerLogo = { ...playerLogo, bgColor: nextMatchPlayerColor };
+
+                document.getElementById('leagueNextHomeLogo').innerHTML = getLogoSVG(isHome ? nextMatchPlayerLogo : enemyTeam.logo);
                 document.getElementById('leagueNextHomeName').innerText = isHome ? playerTeamName : enemyTeam.name;
-                document.getElementById('leagueNextAwayLogo').innerHTML = getLogoSVG(!isHome ? playerLogo : enemyTeam.logo);
+                document.getElementById('leagueNextAwayLogo').innerHTML = getLogoSVG(!isHome ? nextMatchPlayerLogo : enemyTeam.logo);
                 document.getElementById('leagueNextAwayName').innerText = !isHome ? playerTeamName : enemyTeam.name;
             } else {
                 subTitle.innerText = t('seasonComplete');
@@ -1740,6 +1745,8 @@
             if(data.teamColor) playerTeamColor = data.teamColor;
             if(data.altColor) playerAltColor = data.altColor;
             
+            matchPlayerColor = playerTeamColor; // Ensure it's synced on load
+            
             if(data.logo) {
                 playerLogo = data.logo;
             } else {
@@ -1883,9 +1890,13 @@
         }
 
         function updateTeamUI() {
+            // Wir verwenden matchPlayerColor für PVE, falls wir in PVE/League sind und es eine Kollision gibt.
+            let displayColor = (currentMode === 'PVE' || currentMode === 'LEAGUE' || currentMode === 'PVP') ? matchPlayerColor : playerTeamColor;
+            let displayLogo = { ...playerLogo, bgColor: displayColor };
+
             document.getElementById('pvePlayerNameLabel').innerText = playerTeamName;
-            document.getElementById('pvePlayerNameLabel').style.color = playerTeamColor;
-            document.getElementById('pvePlayerLogo').innerHTML = getLogoSVG(playerLogo);
+            document.getElementById('pvePlayerNameLabel').style.color = displayColor;
+            document.getElementById('pvePlayerLogo').innerHTML = getLogoSVG(displayLogo);
             
             document.getElementById('pveEnemyNameLabel').innerText = enemyTeamName;
             document.getElementById('pveEnemyNameLabel').style.color = enemyColor;
@@ -1988,6 +1999,8 @@
             playerTeamColor = tempSelectedColor;
             playerAltColor = tempAltColor;
             playerLogo = JSON.parse(JSON.stringify(tempLogo));
+            
+            matchPlayerColor = playerTeamColor; // Auf Default syncen
             
             updateEnemyColor();
             updateTeamUI();
@@ -2638,7 +2651,8 @@
             }
         }
 
-        function resetSim() {
+function resetSim() {
+            matchPlayerColor = playerTeamColor; // Sorge dafür, dass im Lab die normale Farbe genutzt wird
             testRobot.botId = currentRobotId;
             testRobot.weight = teams[currentRobotId].weight;
             testRobot.name = teams[currentRobotId].name;
@@ -2718,6 +2732,14 @@
             enemyColor = currentPvEEnemyTeam.color;
             enemyTeamName = currentPvEEnemyTeam.name;
             enemyLogo = currentPvEEnemyTeam.logo;
+
+            // --- KOLLISIONSLOGIK FÜR FARBEN ---
+            if (enemyColor === playerTeamColor) {
+                matchPlayerColor = playerAltColor;
+            } else {
+                matchPlayerColor = playerTeamColor;
+            }
+
             updateTeamUI(); // update top bar labels
 
             for(let i=0; i<3; i++) {
@@ -3614,8 +3636,9 @@
             if (currentMode === 'PVP') {
                 bodyColor = isP1 ? pvpHostColor : pvpGuestColor;
             } else {
-                bodyColor = isP1 ? playerTeamColor : enemyColor;
+                bodyColor = isP1 ? matchPlayerColor : enemyColor;
             }
+
             
             const dark = '#374151';
             const darker = '#1e293b';
@@ -3781,7 +3804,7 @@
 
                 let hColor, gColor; 
                 if (currentMode === 'PVP') { hColor = pvpHostColor; gColor = pvpGuestColor; } 
-                else { hColor = playerTeamColor; gColor = enemyColor; }
+                else { hColor = matchPlayerColor; gColor = enemyColor; }
                 
                 let leftColor = pveState.half === 1 ? hColor : gColor;
                 let rightColor = pveState.half === 1 ? gColor : hColor;
@@ -3874,7 +3897,7 @@
                 if (currentMode === 'PVP') {
                     hudColor = item.isP1 ? pvpHostColor : pvpGuestColor;
                 } else {
-                    hudColor = item.isP1 ? playerTeamColor : enemyColor;
+                    hudColor = item.isP1 ? matchPlayerColor : enemyColor;
                 }
 
                 ctx.save();
