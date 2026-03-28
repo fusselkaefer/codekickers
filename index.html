@@ -646,6 +646,7 @@
         // --- LEAGUE STATE ---
         let leagueState = null;
         let isLeagueMatch = false;
+        let currentPvEEnemyTeam = null;
 
         // --- TRANSLATION SYSTEM ---
         const i18n = {
@@ -1101,29 +1102,83 @@
         // Blockly-Logik Template: Aggressiver Verfolger (Stammend aus hochgeladener JSON 'teams[1]' & 'teams[2]')
         const USER_TEMPLATE_1 = `{"blocks":{"languageVersion":0,"blocks":[{"type":"start_block","id":"nV2o.N=6zM]zY:@J1d!;","x":55,"y":71,"deletable":false,"next":{"block":{"type":"loop_forever","id":"yW.36VCVO4j/G0%Yaqqz","inputs":{"DO":{"block":{"type":"turn_to","id":"9C2_VFiW:gnS8Tr7qkmZ","fields":{"TARGET":"ENEMY"},"next":{"block":{"type":"move_fwd","id":"gobD3z=d-w6hm$^3)fvX","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"NOnIcs8eKKf$ZDl*w;!h","fields":{"NUM":1}}}}}}}}}}}},{"type":"event_sensor_sees","id":"^DuTv_4kpgN_4ipgrg18","x":817,"y":115,"fields":{"SENSOR":"__S1__","OBJECT":"BALL"},"next":{"block":{"type":"turn_to","id":"),.slx7*myn[/@_G#u(d","fields":{"TARGET":"BALL"}}}},{"type":"event_sensor_sees","id":"5S.~$*0yFlbuEBmba$Fh","x":80,"y":261,"fields":{"SENSOR":"__S2__","OBJECT":"BALL"},"next":{"block":{"type":"sprint_fwd","id":")#W$c:EB1t,{AD,rgbi]","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"mkK+A;0W{+Bt?OOGnf/F","fields":{"NUM":1}}}},"next":{"block":{"type":"kick","id":"[baI-s^{}^qh#MM/}O#L"}}}}},{"type":"event_sensor_sees","id":"jpN/+O;:}_-Pn#Ed%pcU","x":432,"y":235,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY"},"next":{"block":{"type":"kick","id":"llCaE2LW@Qno2:7dVf8w"}}},{"type":"event_sensor_sees","id":"(7EAtqfUZwtnKP[sq4M?","x":52,"y":449,"fields":{"SENSOR":"__S2__","OBJECT":"WALL"},"next":{"block":{"type":"move_bwd","id":"K_orh+l_g8-S_/|o1s#i","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"By0%|~*5GZiOVJJCf_Ww","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_r","id":"F5vh;D,l!_vUaxrY;[D2","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":"+Mu3M0Wum-Z/xxlSiElD","fields":{"NUM":15}},"block":{"type":"random_number","id":"SiHzJ=~NIGWC9pJKPw1Z","inputs":{"MIN":{"shadow":{"type":"math_number","id":"TfKb.fX%}ib]{t)^t*XR","fields":{"NUM":10}}},"MAX":{"shadow":{"type":"math_number","id":":?X[Pa.|iNqumVzE^a5^","fields":{"NUM":45}}}}}}}}}}}},{"type":"event_sensor_sees","id":"=Aqg.9jD?*#l-Se+U;4O","x":519,"y":425,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY_GOAL"},"next":{"block":{"type":"turn_r","id":"p}]h#8}[UT7A]:7)sX*(","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":"+Mu3M0Wum-Z/xxlSiElD","fields":{"NUM":180}}}}}}},{"type":"event_sensor_sees","id":"1gh@s:A(IC-Q/B4oXw$x","x":465,"y":112,"fields":{"SENSOR":"__S1__","OBJECT":"ENEMY"},"next":{"block":{"type":"turn_to","id":"(ec6_{pNvOpGf1}-6INw","fields":{"TARGET":"ENEMY"}}}}]}}`;
 
-        // 10 Variationen der hochgeladenen Blockly-Codes (Mix aus Code-Logik & stark veränderten Gewichten, Ausrichtung IMMER vorn/hinten)
+        // Blockly-Logik Template: Advanced Striker (Masterclass)
+        const USER_TEMPLATE_2 = `{"blocks":{"languageVersion":0,"blocks":[{"type":"start_block","id":"nV2o.N=6zM]zY:@J1d!;","x":162,"y":13,"deletable":false,"next":{"block":{"type":"loop_forever","id":"SK2QVLap+/ti1?kJ-vVj","inputs":{"DO":{"block":{"type":"turn_to","id":"9C2_VFiW:gnS8Tr7qkmZ","fields":{"TARGET":"BALL"},"next":{"block":{"type":"move_fwd","id":"-[1]MTTJWWx-8P8VCZ=Y","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"C2uEt*:J#WK%e~hRtN2!","fields":{"NUM":1}}}}}}}}}}}},{"type":"event_sensor_sees","id":"^DuTv_4kpgN_4ipgrg18","x":658,"y":186,"fields":{"SENSOR":"__S1__","OBJECT":"BALL","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"),.slx7*myn[/@_G#u(d","fields":{"TARGET":"BALL"},"next":{"block":{"type":"sprint_fwd","id":",#FpFExMzWODOUmUR+.t","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"3G?}B$lZAE1szSH@yF7y","fields":{"NUM":1}}}}}}}}},{"type":"event_sensor_sees","id":"5S.~$*0yFlbuEBmba$Fh","x":140,"y":230,"fields":{"SENSOR":"__S2__","OBJECT":"BALL","MODE":"WAIT"},"next":{"block":{"type":"if_else_logic","id":"+:yX;$x*WTImrvkGRr!4","inputs":{"COND":{"block":{"type":"sensing_battery_level","id":"U-SDM_tCfhcqAwe:6;b","fields":{"OP":"LT"},"inputs":{"VAL":{"shadow":{"type":"math_number","id":"A*#T}[ZPtDR0QU[$Z-]Z","fields":{"NUM":20}}}}}},"DO":{"block":{"type":"wait_sec","id":"+sllBgHn=d0q$p?}*ipB","inputs":{"SEC":{"shadow":{"type":"math_number","id":"k:c;YR=2]10Wvg9h/RVd","fields":{"NUM":2}}}}}},"ELSE":{"block":{"type":"set_magnet","id":"8Y_!xJ983_ascu(0M289","fields":{"STATE":"TRUE"},"next":{"block":{"type":"turn_to","id":"2mEpeh_[h:~-zaNQ7%u{","fields":{"TARGET":"BALL"},"next":{"block":{"type":"sprint_fwd","id":"wp}E#qp(eA_SbN7=esPj","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"(2.uww$T%}:1.sj$_+U2","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_to","id":"steW[uzdcbZg:F{zpV4m","fields":{"TARGET":"ENEMY_GOAL"},"next":{"block":{"type":"sprint_fwd","id":"Ej\`Oc7qC61E)WAj=3}Xp","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"UhY6*$lJT@mbi_sZZ5GH","fields":{"NUM":1}}}},"next":{"block":{"type":"set_magnet","id":"xs?Gaa]*?@Wn%Q]GdmY*","fields":{"STATE":"FALSE"},"next":{"block":{"type":"kick","id":"[baI-s^{}^qh#MM/}O#L"}}}}}}}}}}}}}}}}}},{"type":"event_sensor_sees","id":"jpN/+O;:}_-Pn#Ed%pcU","x":656,"y":321,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"Fx(b#!3TF?5K;bK2B?HK","fields":{"TARGET":"BALL"},"next":{"block":{"type":"move_fwd","id":"Jty7X2aL5+d]#p1{qpca","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"2873LpI*gQ|\`c_rlLCPB","fields":{"NUM":1}}}}}}}}},{"type":"event_sensor_sees","id":"(7EAtqfUZwtnKP[sq4M?","x":654,"y":652,"fields":{"SENSOR":"__S2__","OBJECT":"WALL","MODE":"WAIT"},"next":{"block":{"type":"move_bwd","id":"UZUP3JRi.ugf]HlB;$c3","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"[,Y4-SI40kgUt:VT}Esh","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_to","id":"g|Tk41w2RvFB/N7sCN;R","fields":{"TARGET":"BALL"}}}}}},{"type":"event_sensor_sees","id":"=Aqg.9jD?*#l-Se+U;4O","x":649,"y":475,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY_GOAL","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":",v#PIozL=57Lfi/=,7Fj","fields":{"TARGET":"ENEMY_GOAL"},"next":{"block":{"type":"set_magnet","id":"!W[=j2okDJvFM-1@Np2A","fields":{"STATE":"FALSE"},"next":{"block":{"type":"kick","id":"~x2TE!Hgf3PR_1Ipk]:X"}}}}}}},{"type":"event_battery_level","id":"dk_u53.}q}whCxLuRuwT","x":683,"y":70,"fields":{"OP":"LT"},"inputs":{"VAL":{"shadow":{"type":"math_number","id":"jf5BV_TEAFc~(xr5_SFm","fields":{"NUM":10}}}},"next":{"block":{"type":"set_magnet","id":"BWW(*L!UKz{/Wc(RNJF@","fields":{"STATE":"FALSE"}}}},{"type":"event_sensor_sees","id":"arHPU4b=qfx^J@5%lSGf","x":137,"y":694,"fields":{"SENSOR":"__S1__","OBJECT":"WALL","MODE":"WAIT"},"next":{"block":{"type":"move_fwd","id":"XM;vjFGOKoCd)XRt[Poq","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"ad\`d6,l;0c|fx1^!gku!","fields":{"NUM":1}}}}}}}]}}`;
+
+        // Blockly-Logik Template: Advanced Keeper (Masterclass)
+        const USER_TEMPLATE_3 = `{"blocks":{"languageVersion":0,"blocks":[{"type":"start_block","id":"nV2o.N=6zM]zY:@J1d!;","x":137,"y":-39,"deletable":false,"next":{"block":{"type":"move_bwd","id":"2zv0|/O)]bxgu[p#ti3^","inputs":{"STEPS":{"shadow":{"type":"math_number","id":".+W[_Vlj:50ELX;RRLwJ","fields":{"NUM":1}}}},"next":{"block":{"type":"loop_forever","id":"a0*#{cuSJ5?Hl;m5vD0}","inputs":{"DO":{"block":{"type":"turn_to","id":"1I}anvP$N@5;+S95/|=5","fields":{"TARGET":"BALL"}}}}}}}}},{"type":"event_sensor_sees","id":"*l*yuZ+h9!F^;ma._+AH","x":590,"y":140,"fields":{"SENSOR":"__S2__","OBJECT":"BALL","MODE":"WAIT"},"next":{"block":{"type":"sprint_fwd","id":"811X|ab]$JkZ*4!w9o2r","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"rrJ5~l$-Dqj0b\`UgxeHP","fields":{"NUM":2}}}},"next":{"block":{"type":"kick","id":"hSk{$:r4Ru0E(dDz~H#7","next":{"block":{"type":"move_bwd","id":"%=_#.+]Mh=PJ-[s.4/Cd","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"OahVlS!Vv7=g0?//(5-o","fields":{"NUM":2}}}}}}}}}}},{"type":"event_sensor_sees","id":"5z$+Ik,$M!K)Cu5{15+P","x":592,"y":-27,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY","MODE":"WAIT"},"next":{"block":{"type":"sprint_fwd","id":"Sx?H6[4~9gAs[zU8Bbj#","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"o3Tg\`=c@D_!MHVoY77Nb","fields":{"NUM":2}}}},"next":{"block":{"type":"kick","id":"2LQv2vcWZg3Xy.[{8^AW","next":{"block":{"type":"move_bwd","id":"#l~2L{j{m9jA1;RDrCf6","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"tTb_OYwIIrgD0#~P2$$q","fields":{"NUM":2}}}}}}}}}}},{"type":"event_sensor_sees","id":"pl0=PogV_t6yE0Yo#/[(","x":127,"y":323,"fields":{"SENSOR":"__S2__","OBJECT":"WALL","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"$PhkHhW4TVoCeYN9L$Jj","fields":{"TARGET":"OWN_GOAL"},"next":{"block":{"type":"loop_forever","id":"y}S_]#o#04QXgxeX8dBH","inputs":{"DO":{"block":{"type":"if_else_logic","id":"HqAp]fMCg1lx[n;Bgxp=","inputs":{"COND":{"block":{"type":"sensor_object_not","id":"iWn[Z?pVT0,iW,kqO(v7","fields":{"SENSOR":"ANY","OBJECT":"OWN_GOAL"}}},"DO":{"block":{"type":"move_fwd","id":"|gdr3v_\`cD;w[ZS@iqMC","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"GOO0fL{5tK|kzE.;iO!?","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_l","id":"XKw?~FPb,%sFl+nBKY7[","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":":Zc\`F7axHT,OHL_=dJ5s","fields":{"NUM":15}}}}}}}},"ELSE":{"block":{"type":"wait_sec","id":"-W$@v}tP.pIuSFwr:T):","inputs":{"SEC":{"shadow":{"type":"math_number","id":"5wSp@G:sqr^6NR.G[1mv","fields":{"NUM":1}}}}}}}}}}}}}}},{"type":"event_sensor_sees","id":"]3!U|dwHCizN=.$@V3@$","x":123,"y":135,"fields":{"SENSOR":"__S2__","OBJECT":"OWN_GOAL","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"LPEn:;IdEU*lfTEDT42V","fields":{"TARGET":"OWN_GOAL"},"next":{"block":{"type":"move_fwd","id":"uP4Qtw-]s:Y^sgkeO@N:","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"tzm1-jo-JHhdgS5SX:u9","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_r","id":"e~LW?[/R!FI87qex#Xj~","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":"5zYwVeW|dW)qGQcry/+f","fields":{"NUM":180}}}}}}}}}}}]}}`;
+
+        // Blockly-Logik Template: Advanced Bully (Masterclass)
+        const USER_TEMPLATE_4 = `{"blocks":{"languageVersion":0,"blocks":[{"type":"start_block","id":"nV2o.N=6zM]zY:@J1d!;","x":-6,"y":87,"deletable":false,"next":{"block":{"type":"loop_forever","id":"yW.36VCVO4j/G0%Yaqqz","inputs":{"DO":{"block":{"type":"turn_to","id":"9C2_VFiW:gnS8Tr7qkmZ","fields":{"TARGET":"ENEMY"},"next":{"block":{"type":"move_fwd","id":"gobD3z=d-w6hm$^3)fvX","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"NOnIcs8eKKf$ZDl*w;!h","fields":{"NUM":1}}}}}}}}}}}},{"type":"event_sensor_sees","id":"^DuTv_4kpgN_4ipgrg18","x":9,"y":564,"fields":{"SENSOR":"__S1__","OBJECT":"BALL","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"),.slx7*myn[/@_G#u(d","fields":{"TARGET":"BALL"}}}},{"type":"event_sensor_sees","id":"5S.~$*0yFlbuEBmba$Fh","x":-4,"y":255,"fields":{"SENSOR":"__S2__","OBJECT":"BALL","MODE":"WAIT"},"next":{"block":{"type":"sprint_fwd","id":")#W$c:EB1t,{AD,rgbi]","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"mkK+A;0W{+Bt?OOGnf/F","fields":{"NUM":1}}}},"next":{"block":{"type":"kick","id":"[baI-s^{}^qh#MM/}O#L"}}}}},{"type":"event_sensor_sees","id":"jpN/+O;:}_-Pn#Ed%pcU","x":462,"y":268,"fields":{"SENSOR":"__S2__","OBJECT":"ENEMY","MODE":"WAIT"},"next":{"block":{"type":"sprint_fwd","id":"bn*EeoraDD\`(\`vZq6.aE","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"Nch24zC_;D\`$4{8\`H34Z","fields":{"NUM":1}}}},"next":{"block":{"type":"kick","id":"llCaE2LW@Qno2:7dVf8w"}}}}},{"type":"event_sensor_sees","id":"(7EAtqfUZwtnKP[sq4M?","x":-7,"y":397,"fields":{"SENSOR":"__S2__","OBJECT":"WALL","MODE":"WAIT"},"next":{"block":{"type":"move_bwd","id":"K_orh+l_g8-S_/|o1s#i","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"By0%|~*5GZiOVJJCf_Ww","fields":{"NUM":1}}}},"next":{"block":{"type":"turn_r","id":"F5vh;D,l!_vUaxrY;[D2","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":"pkDL+;gF,Kl;?X6mGR8l","fields":{"NUM":90}}}}}}}}},{"type":"event_sensor_sees","id":"=Aqg.9jD?*#l-Se+U;4O","x":451,"y":438,"fields":{"SENSOR":"__S2__","OBJECT":"OWN_GOAL","MODE":"WAIT"},"next":{"block":{"type":"move_bwd","id":"6eQ]\`E9(akn(lnN:sy_-","inputs":{"STEPS":{"shadow":{"type":"math_number","id":"vi^S-SuH2garM/!b}@*o","fields":{"NUM":2}}}},"next":{"block":{"type":"turn_r","id":"p}]h#8}[UT7A]:7)sX*(","inputs":{"DEGREES":{"shadow":{"type":"math_number","id":"+Mu3M0Wum-Z/xxlSiElD","fields":{"NUM":180}}}}}}}}},{"type":"event_sensor_sees","id":"1gh@s:A(IC-Q/B4oXw$x","x":465,"y":112,"fields":{"SENSOR":"__S1__","OBJECT":"ENEMY","MODE":"WAIT"},"next":{"block":{"type":"turn_to","id":"(ec6_{pNvOpGf1}-6INw","fields":{"TARGET":"ENEMY"}}}}]}}`;
+
+        // 10 Variationen der KI-Bots (Jetzt mit deinen neuen Masterclass-Templates für maximale Herausforderung)
         const ENEMY_ARCHETYPES = [
-            { weight: 1,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // Federleicht, ballfokussiert
-            { weight: 8,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }, // Schwer, aggressiv, jagt Gegner
-            { weight: 3,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // Agil, Ball-Jäger
-            { weight: 10, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }, // Extrem schwerer Bulldozer
-            { weight: 5,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // Durchschnittsgewicht, ausgewogen
-            { weight: 2,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }, // Flinker Störenfried
-            { weight: 7,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // Robuster Allrounder
-            { weight: 6,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }, // Aggressiv, mittelschwer
-            { weight: 4,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // Wendiger Scout
-            { weight: 9,  s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }  // Riese
+            { weight: 4, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // 0: Basic Striker (Leicht)
+            { weight: 7, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_1 }, // 1: Basic Bully (Leicht)
+            { weight: 3, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_2 }, // 2: Adv Striker (Schwer - Dein Code!)
+            { weight: 9, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_3 }, // 3: Adv Keeper (Schwer - Dein Code!)
+            { weight: 8, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_4 }, // 4: Adv Bully (Schwer - Dein Code!)
+            { weight: 1, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_2 }, // 5: Fast Adv Striker (Extrem schnell)
+            { weight: 6, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_3 }, // 6: Mid Adv Keeper (Etwas beweglicher)
+            { weight: 5, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_4 }, // 7: Mid Adv Bully
+            { weight: 5, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_0 }, // 8: Balanced Basic
+            { weight: 5, s1A: -90, s2A: 90, codeTpl: USER_TEMPLATE_2 }  // 9: Balanced Adv Striker
         ];
 
-        const LEAGUE_AI_TEAMS = [
-            { id: 1, name: "Crimson Cobras", color: "#ef4444", logo: { shape: 'shield', icon: '🐍', bgColor: '#ef4444', fgColor: '#ffffff' }, bots: [{name: "Viper", arch: 1, w: 6}, {name: "Python", arch: 3, w: 9}, {name: "Mamba", arch: 6, w: 8}] },
-            { id: 2, name: "Neon Knights", color: "#06b6d4", logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#111111' }, bots: [{name: "Lancelot", arch: 0, w: 5}, {name: "Arthur", arch: 2, w: 7}, {name: "Gawain", arch: 4, w: 6}] },
-            { id: 3, name: "Toxic Titans", color: "#22c55e", logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, bots: [{name: "Ooze", arch: 3, w: 8}, {name: "Sludge", arch: 6, w: 10}, {name: "Smog", arch: 9, w: 9}] },
-            { id: 4, name: "Golden Gears", color: "#eab308", logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#111111' }, bots: [{name: "Cog", arch: 0, w: 4}, {name: "Sprocket", arch: 5, w: 2}, {name: "Piston", arch: 8, w: 3}] },
-            { id: 5, name: "Midnight Mechas", color: "#64748b", logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff' }, bots: [{name: "Shadow", arch: 2, w: 7}, {name: "Stealth", arch: 7, w: 6}, {name: "Ghost", arch: 8, w: 5}] },
-            { id: 6, name: "Plasma Phantoms", color: "#ec4899", logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff' }, bots: [{name: "Spark", arch: 9, w: 5}, {name: "Flare", arch: 9, w: 4}, {name: "Pulse", arch: 9, w: 6}] },
-            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff' }, bots: [{name: "Alpha", arch: 0, w: 5}, {name: "Beta", arch: 1, w: 6}, {name: "Gamma", arch: 2, w: 4}] }
+        // Liga-Teams Konfiguration (Dient als Vorlage für dynamische Generierung)
+        const LEAGUE_AI_TEAMS_CONFIG = [
+            { id: 1, name: "Crimson Cobras", color: "#ef4444", logo: { shape: 'shield', icon: '🐍', bgColor: '#ef4444', fgColor: '#ffffff' }, tier: 1, names: ["Viper", "Python", "Mamba"] },
+            { id: 2, name: "Neon Knights", color: "#06b6d4", logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#111111' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
+            { id: 3, name: "Toxic Titans", color: "#22c55e", logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
+            { id: 4, name: "Golden Gears", color: "#eab308", logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#111111' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
+            { id: 5, name: "Midnight Mechas", color: "#64748b", logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff' }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
+            { id: 6, name: "Plasma Phantoms", color: "#ec4899", logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff' }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
+            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff' }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
         ];
+
+        function generateRandomTeamBots(tier, names) {
+            // Pools an Archetypen basierend auf dem Schwierigkeitsgrad (Tier)
+            let pools = {
+                1: { s: [0, 8], b: [1], k: [0, 8] }, // Keine echten Keeper in Tier 1
+                2: { s: [0, 9], b: [1, 7], k: [6] }, // Mittlere Keeper und Advanced Striker
+                3: { s: [2, 5, 9], b: [4, 7], k: [3, 6] }, // Masterclass!
+                4: { s: [2, 5], b: [4], k: [3] } // Endboss: Nur das Beste vom Besten
+            };
+            let p = pools[tier] || pools[3];
+
+            // Formationen: 's'=Striker, 'b'=Bully, 'k'=Keeper
+            // WICHTIG: Keeper sind IMMER in der Mitte (Index 1 / R2)
+            let formations = [
+                ['s', 'k', 's'], // 2 Strikers, 1 Keeper
+                ['b', 'k', 's'], // Bully, Keeper, Striker
+                ['s', 'k', 'b'], // Striker, Keeper, Bully
+                ['b', 's', 'b'], // 2 Bullies, 1 Striker
+                ['s', 's', 's']  // All out attack
+            ];
+            
+            // Ab Tier 3 (Pro) werden immer Keeper eingesetzt
+            let allowedFormations = formations;
+            if (tier >= 3) allowedFormations = [['s', 'k', 's'], ['b', 'k', 's'], ['s', 'k', 'b']]; 
+            if (tier === 4) allowedFormations = [['s', 'k', 'b'], ['b', 'k', 's']]; 
+            
+            let form = allowedFormations[Math.floor(Math.random() * allowedFormations.length)];
+            let pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            
+            // Zufällige Gewichtung (± varY)
+            let rW = (base, varY) => Math.max(1, Math.min(10, base + Math.floor(Math.random() * (varY * 2 + 1)) - varY));
+            
+            let bots = [];
+            for (let i = 0; i < 3; i++) {
+                let role = form[i];
+                let arch, w;
+                if (role === 's') { arch = pick(p.s); w = rW(3, 1); }
+                else if (role === 'b') { arch = pick(p.b); w = rW(8, 1); }
+                else if (role === 'k') { arch = pick(p.k); w = (tier >= 3) ? 10 : rW(8, 1); } // Boss Keeper ist max weight
+                
+                bots.push({ name: names[i], arch: arch, w: w });
+            }
+            return bots;
+        }
 
         function applyArchetypeToEnemy(botIndex, archetypeIndex, overrideWeight, overrideName) {
             let arch = ENEMY_ARCHETYPES[archetypeIndex];
@@ -1166,7 +1221,14 @@
         // ================= LEAGUE SYSTEM =================
         function generateLeagueSchedule() {
             let schedule = [];
-            let teamIndices = [0, 1, 2, 3, 4, 5, 6, 7];
+            // Die 7 KI-Teams mischen, damit der Spielplan jede Saison anders ist!
+            let aiTeams = [1, 2, 3, 4, 5, 6, 7];
+            for (let i = aiTeams.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [aiTeams[i], aiTeams[j]] = [aiTeams[j], aiTeams[i]];
+            }
+            let teamIndices = [0, ...aiTeams]; // Spieler ist immer 0
+
             for (let round = 0; round < 7; round++) {
                 let matchday = [];
                 for (let i = 0; i < 4; i++) {
@@ -1183,8 +1245,9 @@
             let playerTeamInfo = { id: 0, name: playerTeamName, color: playerTeamColor, logo: playerLogo, stats: { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 } };
             let allTeams = [playerTeamInfo];
             
-            LEAGUE_AI_TEAMS.forEach(ai => {
-                allTeams.push({ id: ai.id, name: ai.name, color: ai.color, logo: ai.logo, bots: ai.bots, stats: { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 } });
+            LEAGUE_AI_TEAMS_CONFIG.forEach(ai => {
+                let generatedBots = generateRandomTeamBots(ai.tier, ai.names);
+                allTeams.push({ id: ai.id, name: ai.name, color: ai.color, logo: ai.logo, bots: generatedBots, stats: { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 } });
             });
 
             leagueState = {
@@ -1997,7 +2060,14 @@
 
         // --- UI & MODES ---
         function setMode(mode) {
-            if (mode === currentMode) return;
+            if (mode === currentMode) {
+                // If user clicks Quick Match again while in Quick Match (and stopped), generate a new random opponent!
+                if (mode === 'PVE' && pveState.status === 'STOPPED' && !isLeagueMatch) {
+                    initPvE(true);
+                    setTimeout(() => resizePvECanvas(), 50);
+                }
+                return;
+            }
 
             if (pveState.status !== 'STOPPED' || pvpMatchInProgress) {
                 customAlert(t('matchInProgressMsg'));
@@ -2051,7 +2121,7 @@
                     document.getElementById('navPvE').classList.replace('text-slate-400', 'text-white');
                 }
 
-                initPvE();
+                initPvE(true);
                 setTimeout(() => resizePvECanvas(), 50); 
             } else if (mode === 'LEAGUE') {
                 document.getElementById('leagueView').classList.remove('hidden');
@@ -2544,7 +2614,7 @@
                 btn.classList.replace('hover:bg-green-500', 'hover:bg-red-500');
                 btn.classList.replace('border-green-700', 'border-red-700');
                 
-                initPvE();
+                initPvE(false);
                 pveState.status = 'PLAYING';
                 cancelAnimationFrame(simLoopId);
                 lastFrameTime = 0;
@@ -2613,7 +2683,7 @@
             if(!simRunning && currentMode === 'LAB') drawSim();
         }
 
-        function initPvE() {
+        function initPvE(regenerateEnemy = true) {
             pveState.ticks = 90 * 60;
             pveState.half = 1;
             pveState.scorePlayer = 0;
@@ -2626,31 +2696,36 @@
             pveEnemyBots = [];
             
             // Determine enemy team (League or Random for Quick Match)
-            let currentEnemyTeam = null;
-            if (isLeagueMatch && leagueState) {
-                let currentRound = leagueState.schedule[leagueState.currentMatchday];
-                let playerMatch = currentRound.find(m => m.home === 0 || m.away === 0);
-                let enemyId = playerMatch.home === 0 ? playerMatch.away : playerMatch.home;
-                currentEnemyTeam = leagueState.teams.find(t => t.id === enemyId);
-            } else {
-                // Pick a random League AI Team for Quick Match (avoiding same color if possible)
-                let availableTeams = LEAGUE_AI_TEAMS.filter(t => t.color !== playerTeamColor);
-                if (availableTeams.length === 0) availableTeams = LEAGUE_AI_TEAMS;
-                let randomIndex = Math.floor(Math.random() * availableTeams.length);
-                currentEnemyTeam = availableTeams[randomIndex];
+            if (regenerateEnemy || !currentPvEEnemyTeam) {
+                if (isLeagueMatch && leagueState) {
+                    let currentRound = leagueState.schedule[leagueState.currentMatchday];
+                    let playerMatch = currentRound.find(m => m.home === 0 || m.away === 0);
+                    let enemyId = playerMatch.home === 0 ? playerMatch.away : playerMatch.home;
+                    currentPvEEnemyTeam = leagueState.teams.find(t => t.id === enemyId);
+                } else {
+                    // Pick a random League AI Team for Quick Match (avoiding same color if possible)
+                    let availableTeams = LEAGUE_AI_TEAMS_CONFIG.filter(t => t.color !== playerTeamColor);
+                    if (availableTeams.length === 0) availableTeams = LEAGUE_AI_TEAMS_CONFIG;
+                    let randomIndex = Math.floor(Math.random() * availableTeams.length);
+                    let aiConfig = availableTeams[randomIndex];
+                    currentPvEEnemyTeam = {
+                        id: aiConfig.id, name: aiConfig.name, color: aiConfig.color, logo: aiConfig.logo,
+                        bots: generateRandomTeamBots(aiConfig.tier, aiConfig.names)
+                    };
+                }
             }
             
-            enemyColor = currentEnemyTeam.color;
-            enemyTeamName = currentEnemyTeam.name;
-            enemyLogo = currentEnemyTeam.logo;
+            enemyColor = currentPvEEnemyTeam.color;
+            enemyTeamName = currentPvEEnemyTeam.name;
+            enemyLogo = currentPvEEnemyTeam.logo;
             updateTeamUI(); // update top bar labels
 
             for(let i=0; i<3; i++) {
                 pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
                 
-                let eName = currentEnemyTeam.bots[i].name;
-                let eWeight = currentEnemyTeam.bots[i].w;
-                let archIndex = currentEnemyTeam.bots[i].arch;
+                let eName = currentPvEEnemyTeam.bots[i].name;
+                let eWeight = currentPvEEnemyTeam.bots[i].w || currentPvEEnemyTeam.bots[i].weight;
+                let archIndex = currentPvEEnemyTeam.bots[i].arch !== undefined ? currentPvEEnemyTeam.bots[i].arch : (i % 10);
                 
                 pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
                 applyArchetypeToEnemy(i, archIndex, eWeight, eName);
