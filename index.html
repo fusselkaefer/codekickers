@@ -83,9 +83,9 @@
         <!-- View Switcher -->
         <div class="bg-slate-800 p-1 rounded-full flex shadow-inner border border-slate-700 overflow-x-auto custom-scrollbar">
             <button id="navLab" onclick="setMode('LAB')" class="px-5 py-1.5 rounded-full bg-blue-600 text-white font-bold shadow transition-all text-sm whitespace-nowrap" data-i18n="navLab">🛠️ Construction</button>
-            <button id="navPvE" onclick="setMode('PVE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvE">⚔️ Schnellspiel</button>
+            <button id="navPvE" onclick="setMode('PVE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvE">⚽️ Schnellspiel</button>
             <button id="navLeague" onclick="setMode('LEAGUE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navLeague">🏆 Liga</button>
-            <button id="navPvP" onclick="handlePvPClick()" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvP">🌐 PvP Match</button>
+            <button id="navPvP" onclick="handlePvPClick()" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvP">🌐 Online Multiplayer</button>
         </div>
 
         <div class="flex space-x-2 md:space-x-4 items-center pl-2 shrink-0">
@@ -376,7 +376,7 @@
                 <div class="bg-slate-800 p-8 rounded-xl border border-slate-600 text-center flex-1 shadow-2xl">
                     <h3 class="text-2xl font-bold text-blue-400 mb-4" data-i18n="hostGame">Lobby erstellen (Host)</h3>
                     <p class="text-slate-400 text-sm mb-6" data-i18n="hostDesc">Erstelle ein Spiel und warte auf einen Gegner.</p>
-                    <button id="btnHost" onclick="hostPvP()" class="bg-blue-600 hover:bg-blue-500 transition-colors px-8 py-3 rounded-lg text-white font-bold w-full text-lg shadow-lg">Lobby erstellen</button>
+                    <button id="btnHost" onclick="hostPvP()" class="bg-blue-600 hover:bg-blue-500 transition-colors px-8 py-3 rounded-lg text-white font-bold w-full text-lg shadow-lg" data-i18n="createLobbyBtn">Lobby erstellen</button>
                     <div id="hostCodeContainer" class="hidden mt-6 bg-slate-900 p-4 rounded-lg border border-slate-700">
                         <p class="text-slate-400 text-sm mb-2" data-i18n="yourCode">Dein Lobby-Code:</p>
                         <p id="pvpHostCode" class="text-4xl font-mono text-white tracking-widest"></p>
@@ -388,7 +388,7 @@
                     <h3 class="text-2xl font-bold text-emerald-400 mb-4" data-i18n="joinGame">Spiel beitreten (Gast)</h3>
                     <p class="text-slate-400 text-sm mb-6" data-i18n="joinDesc">Gib den 4-stelligen Code des Hosts ein.</p>
                     <input type="text" id="pvpJoinCode" maxlength="4" class="bg-slate-900 border border-slate-600 text-white font-mono text-center text-3xl w-full p-3 rounded-lg mb-6 uppercase outline-none focus:border-emerald-500" placeholder="CODE">
-                    <button id="btnJoin" onclick="joinPvP()" class="bg-emerald-600 hover:bg-emerald-500 transition-colors px-8 py-3 rounded-lg text-white font-bold w-full text-lg shadow-lg">Beitreten</button>
+                    <button id="btnJoin" onclick="joinPvP()" class="bg-emerald-600 hover:bg-emerald-500 transition-colors px-8 py-3 rounded-lg text-white font-bold w-full text-lg shadow-lg" data-i18n="joinLobbyBtn">Beitreten</button>
                 </div>
             </div>
 
@@ -401,7 +401,9 @@
                     <!-- Host Player -->
                     <div class="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-2xl shadow-inner border border-slate-700 w-full max-w-xs relative transition-all" id="pvpLobbyHostBox">
                         <div class="absolute -top-3 bg-blue-600 text-[10px] font-bold px-3 py-1 rounded-full text-white tracking-widest uppercase">Host</div>
-                        <div class="w-24 h-24 rounded-full mb-4 border-4 shadow-xl flex items-center justify-center text-4xl" id="pvpLobbyHostColor" style="border-color: #3b82f6; background-color: #1e293b;">🤖</div>
+                        <div class="w-24 h-24 mb-4 flex items-center justify-center transition-transform hover:scale-110" id="pvpLobbyHostLogo">
+                            <div class="w-24 h-24 rounded-full border-4 shadow-xl flex items-center justify-center text-4xl" style="border-color: #3b82f6; background-color: #1e293b;">🤖</div>
+                        </div>
                         <span class="text-2xl font-bold text-white text-center truncate w-full" id="pvpLobbyHostName">Host Name</span>
                     </div>
                     
@@ -410,7 +412,9 @@
                     <!-- Guest Player -->
                     <div class="flex flex-col items-center justify-center p-6 bg-slate-900 rounded-2xl shadow-inner border border-slate-700 w-full max-w-xs relative transition-all" id="pvpLobbyGuestBox">
                         <div class="absolute -top-3 bg-red-600 text-[10px] font-bold px-3 py-1 rounded-full text-white tracking-widest uppercase" data-i18n="guest">Gast</div>
-                        <div class="w-24 h-24 rounded-full mb-4 border-4 shadow-xl flex items-center justify-center text-4xl" id="pvpLobbyGuestColor" style="border-color: #ef4444; background-color: #1e293b;">🤖</div>
+                        <div class="w-24 h-24 mb-4 flex items-center justify-center transition-transform hover:scale-110" id="pvpLobbyGuestLogo">
+                            <div class="w-24 h-24 rounded-full border-4 shadow-xl flex items-center justify-center text-4xl" style="border-color: #ef4444; background-color: #1e293b;">🤖</div>
+                        </div>
                         <span class="text-2xl font-bold text-white text-center truncate w-full" id="pvpLobbyGuestName">Guest Name</span>
                     </div>
                 </div>
@@ -437,7 +441,7 @@
             <div class="w-full bg-slate-800 border-b border-slate-600 px-4 md:px-6 py-3 flex justify-between items-center z-20 shadow-md shrink-0">
                 <!-- Host Team HUD -->
                 <div class="flex items-center gap-4 md:gap-6">
-                    <div id="pvpHostLogo" class="w-10 h-10 shrink-0 hidden sm:block transition-transform hover:scale-110"></div>
+                    <div id="pvpHostLogo" class="w-8 h-8 md:w-10 md:h-10 shrink-0 transition-transform hover:scale-110"></div>
                     <div class="flex flex-col items-center">
                         <span class="text-[10px] font-bold uppercase tracking-widest" id="pvpHostScoreName" style="color: #3b82f6;">Host Team</span>
                         <span class="text-3xl font-bold text-white leading-none" id="pvpScoreHost">0</span>
@@ -473,7 +477,7 @@
                         <span class="text-[10px] font-bold uppercase tracking-widest" id="pvpGuestScoreName" style="color: #ef4444;">Guest Team</span>
                         <span class="text-3xl font-bold text-white leading-none" id="pvpScoreGuest">0</span>
                     </div>
-                    <div id="pvpGuestLogo" class="w-10 h-10 shrink-0 hidden sm:block transition-transform hover:scale-110"></div>
+                    <div id="pvpGuestLogo" class="w-8 h-8 md:w-10 md:h-10 shrink-0 transition-transform hover:scale-110"></div>
                 </div>
             </div>
 
@@ -651,7 +655,7 @@
         // --- TRANSLATION SYSTEM ---
         const i18n = {
             en: {
-                navLab: "🛠️ Construction", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 PvP Match", importBtn: "📥 Import", exportBtn: "📤 Export",
+                navLab: "🛠️ Construction", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Construction",
                 testKickBtn: "🦵 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
                 clickPlaceHint: "Click to place/remove", weightFast: "Fast", weightHeavy: "Heavy",
@@ -682,11 +686,17 @@
                 blkSendSignal: "Send Signal %1", blkReceiveSignal: "When receiving Signal %1 %2",
                 sensCyan: "Cyan", sensGreen: "Green", sensPink: "Pink", sensOrange: "Orange", sensPurple: "Purple", sensWhite: "White",
                 pvpTitle: "PvP Multiplayer", hostGame: "Host Game", hostDesc: "Create a lobby and wait for an opponent.",
+                createLobbyBtn: "Create Lobby", joinLobbyBtn: "Join",
                 yourCode: "Your Lobby Code:", joinGame: "Join Game (Guest)", joinDesc: "Enter the host's 4-digit code.",
                 connected: "Connected!", guest: "Guest", startMatchBtn: "Start Match", waitingForHost: "Waiting for Host...",
                 disconnectBtn: "Disconnect", leaveMatchBtn: "Leave Match", matchInProgressMsg: "You cannot change menus during an active match!",
                 invalidCode: "Please enter a valid 4-digit code.", guestSync: "Guest data is syncing. Please wait...", disconnectedMsg: "The connection to the other player was lost.",
                 botNameLabel: "Bot Name", ownGoal: "OWN GOAL", matchSummary: "Match Summary", noGoals: "No goals scored.",
+                creatingLobby: "Creating Lobby...", lobbyReady: "Lobby ready! Share this code with your opponent.",
+                connecting: "Connecting...", errorPrefix: "Error: ", connError: "Connection error: Check the code! (",
+                hsSendHost: "Connected. Sending Host data...", hsWaitHost: "Connected. Waiting for Host data...",
+                hsSendGuest: "Host data received. Sending Guest data...", hsWaitStart: "Data sent. Waiting for start...",
+                hsMatchReady: "Guest data received. Match can start!",
                 // League
                 leagueTitle: "CodeKickers League", startSeason: "Start New Season", standings: "Standings", matchday: "Matchday", playMatchBtn: "Play Match",
                 seasonComplete: "Season Finished!", finalRank: "Your Final Rank: ", pts: "Pts", continueBtn: "Continue",
@@ -763,7 +773,7 @@
                 acceptBtn: "Accept", declineBtn: "Decline"
             },
             de: {
-                navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 PvP Match", importBtn: "📥 Import", exportBtn: "📤 Export",
+                navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Konstruktion",
                 testKickBtn: "🦵 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
                 clickPlaceHint: "Klicken zum Platzieren/Entfernen", weightFast: "Schnell", weightHeavy: "Schwer",
@@ -794,11 +804,17 @@
                 blkSendSignal: "Sende Signal %1", blkReceiveSignal: "Wenn Signal %1 empfangen %2",
                 sensCyan: "Cyan", sensGreen: "Grün", sensPink: "Pink", sensOrange: "Orange", sensPurple: "Lila", sensWhite: "Weiß",
                 pvpTitle: "PvP Multiplayer", hostGame: "Lobby erstellen (Host)", hostDesc: "Erstelle ein Spiel und warte auf einen Gegner.",
+                createLobbyBtn: "Lobby erstellen", joinLobbyBtn: "Beitreten",
                 yourCode: "Dein Lobby-Code:", joinGame: "Spiel beitreten (Gast)", joinDesc: "Gib den 4-stelligen Code des Hosts ein.",
                 connected: "Verbindung hergestellt!", guest: "Gast", startMatchBtn: "Match Starten", waitingForHost: "Warte auf Host...",
                 disconnectBtn: "Verbindung trennen", leaveMatchBtn: "Spiel Verlassen", matchInProgressMsg: "Während eines Matches kann das Menü nicht gewechselt werden!",
                 invalidCode: "Bitte gültigen 4-stelligen Code eingeben.", guestSync: "Gast-Daten werden noch synchronisiert. Bitte warten...", disconnectedMsg: "Die Verbindung zum anderen Spieler wurde getrennt.",
                 botNameLabel: "Bot Name", ownGoal: "EIGENTOR", matchSummary: "Spielzusammenfassung", noGoals: "Keine Tore gefallen.",
+                creatingLobby: "Erstelle Lobby...", lobbyReady: "Lobby bereit! Teile diesen Code mit deinem Gegner.",
+                connecting: "Verbinde...", errorPrefix: "Fehler: ", connError: "Verbindungsfehler: Überprüfe den Code! (",
+                hsSendHost: "Verbindung steht. Sende Host-Daten...", hsWaitHost: "Verbindung steht. Warte auf Host-Daten...",
+                hsSendGuest: "Host-Daten empfangen. Sende eigene Roboter-Daten...", hsWaitStart: "Daten gesendet. Warte auf Start...",
+                hsMatchReady: "Gast-Daten empfangen. Match kann starten!",
                 // League
                 leagueTitle: "CodeKickers League", startSeason: "Neue Saison starten", standings: "Tabelle", matchday: "Spieltag", playMatchBtn: "Spiel starten",
                 seasonComplete: "Saison Beendet!", finalRank: "Dein Endplatz: ", pts: "Pkt", continueBtn: "Weiter",
@@ -2412,7 +2428,7 @@
         function getRobotSVG(isKicking, isSensing) {
             let kickOffset = isKicking ? 25 : 0;
             let batColor = '#22c55e';
-            let batW = 26;
+            let batW = 22;
             
             let bodyColor = playerTeamColor;
 
@@ -2456,11 +2472,12 @@
                 </g>
                 <path d="M 10 60 A 40 40 0 0 1 90 60 Z" fill="url(#svgDomeGloss)" />
                 
-                <rect x="35" y="38" width="30" height="8" rx="2" fill="#0f172a" class="robo-stroke" />
+                <!-- Classic Battery Outline -->
+                <path d="M 38 32 h 22 a 2 2 0 0 1 2 2 v 1 h 2 a 1 1 0 0 1 1 1 v 2 a 1 1 0 0 1 -1 1 h -2 v 1 a 2 2 0 0 1 -2 2 h -22 a 2 2 0 0 1 -2 -2 v -6 a 2 2 0 0 1 2 -2 Z" fill="#0f172a" class="robo-stroke" />
                 
-                <!-- Glowing Battery -->
-                <rect x="37" y="40" width="${batW}" height="4" rx="1" fill="${batColor}" filter="url(#svgGlow)" />
-                <rect x="37" y="40.5" width="${batW}" height="2" rx="0.5" fill="rgba(255,255,255,0.7)" />
+                <!-- Glowing Battery Level -->
+                <rect x="38" y="34" width="${batW}" height="6" rx="1" fill="${batColor}" filter="url(#svgGlow)" />
+                <rect x="38" y="34.5" width="${batW}" height="2" rx="0.5" fill="rgba(255,255,255,0.7)" />
 
                 <g clip-path="url(#domeClip)">
                     <!-- Eyes -->
@@ -3709,18 +3726,38 @@ function resetSim() {
             ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fill();
 
             // Battery Indicator on Dome
-            rect(35, 38, 30, 8, '#0f172a', 2);
-            let batW = 26 * (bot.battery / 100);
+            ctx.beginPath();
+            ctx.moveTo(38, 32);
+            ctx.lineTo(60, 32);
+            ctx.arcTo(62, 32, 62, 34, 2);
+            ctx.lineTo(62, 35);
+            ctx.lineTo(64, 35);
+            ctx.arcTo(65, 35, 65, 36, 1);
+            ctx.lineTo(65, 38);
+            ctx.arcTo(65, 39, 64, 39, 1);
+            ctx.lineTo(62, 39);
+            ctx.lineTo(62, 40);
+            ctx.arcTo(62, 42, 60, 42, 2);
+            ctx.lineTo(38, 42);
+            ctx.arcTo(36, 42, 36, 40, 2);
+            ctx.lineTo(36, 34);
+            ctx.arcTo(36, 32, 38, 32, 2);
+            ctx.closePath();
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.stroke();
+
+            let batW = 22 * (bot.battery / 100);
             let batColor = bot.battery > 50 ? '#22c55e' : (bot.battery > 20 ? '#eab308' : '#ef4444');
             if (batW > 0) {
                 ctx.beginPath();
-                if(ctx.roundRect) ctx.roundRect(37, 40, batW, 4, 1); else ctx.rect(37, 40, batW, 4);
+                if(ctx.roundRect) ctx.roundRect(38, 34, batW, 6, 1); else ctx.rect(38, 34, batW, 6);
                 ctx.fillStyle = batColor;
                 ctx.shadowColor = batColor; ctx.shadowBlur = 10; ctx.fill();
                 ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
                 
                 ctx.beginPath();
-                if(ctx.roundRect) ctx.roundRect(37, 40.5, batW, 2, 0.5); else ctx.rect(37, 40.5, batW, 2);
+                if(ctx.roundRect) ctx.roundRect(38, 34.5, batW, 2, 0.5); else ctx.rect(38, 34.5, batW, 2);
                 ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fill();
             }
 
@@ -4086,13 +4123,13 @@ function resetSim() {
             let code = Math.random().toString(36).substring(2, 6).toUpperCase();
             document.getElementById('hostCodeContainer').classList.remove('hidden');
             document.getElementById('pvpHostCode').innerText = code;
-            showPvPMsg("Erstelle Lobby...");
+            showPvPMsg(t('creatingLobby'));
 
             peer = new Peer('rb-' + code);
             isPvPHost = true;
 
             peer.on('open', id => {
-                showPvPMsg("Lobby bereit! Teile diesen Code mit deinem Gegner.");
+                showPvPMsg(t('lobbyReady'));
             });
 
             peer.on('connection', c => {
@@ -4101,7 +4138,7 @@ function resetSim() {
             });
 
             peer.on('error', err => {
-                showPvPMsg("Fehler: " + err.message, true);
+                showPvPMsg(t('errorPrefix') + err.message, true);
                 document.getElementById('btnHost').disabled = false;
                 document.getElementById('btnJoin').disabled = false;
             });
@@ -4117,7 +4154,7 @@ function resetSim() {
 
             document.getElementById('btnHost').disabled = true;
             document.getElementById('btnJoin').disabled = true;
-            showPvPMsg("Verbinde...");
+            showPvPMsg(t('connecting'));
 
             peer = new Peer();
             isPvPHost = false;
@@ -4128,7 +4165,7 @@ function resetSim() {
             });
 
             peer.on('error', err => {
-                showPvPMsg("Verbindungsfehler: Überprüfe den Code! (" + err.message + ")", true);
+                showPvPMsg(t('connError') + err.message + ")", true);
                 document.getElementById('btnHost').disabled = false;
                 document.getElementById('btnJoin').disabled = false;
             });
@@ -4145,9 +4182,10 @@ function resetSim() {
                 if (isPvPHost) {
                     pvpHostName = playerTeamName;
                     pvpHostColor = playerTeamColor;
+                    pvpHostLogoObj = JSON.parse(JSON.stringify(playerLogo));
                     
                     document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
-                    document.getElementById('pvpLobbyHostColor').style.borderColor = pvpHostColor;
+                    document.getElementById('pvpLobbyHostLogo').innerHTML = getLogoSVG(pvpHostLogoObj);
                     document.getElementById('pvpHostControls').classList.remove('hidden');
                     
                     let btnStart = document.getElementById('btnStartMatch');
@@ -4156,7 +4194,7 @@ function resetSim() {
                         btnStart.className = "bg-slate-600 cursor-not-allowed px-8 py-4 rounded-xl text-slate-400 font-bold text-2xl w-full shadow-lg uppercase tracking-wider transition-colors";
                     }
 
-                    setHandshakeStatus("Verbindung steht. Sende Host-Daten...");
+                    setHandshakeStatus(t('hsSendHost'));
                     pvpConn.send({ 
                         type: 'HOST_READY', 
                         payload: JSON.stringify({ 
@@ -4169,12 +4207,13 @@ function resetSim() {
                 } else {
                     pvpGuestName = playerTeamName;
                     pvpGuestColor = playerTeamColor;
+                    pvpGuestLogoObj = JSON.parse(JSON.stringify(playerLogo));
                     
                     document.getElementById('pvpLobbyGuestName').innerText = pvpGuestName;
-                    document.getElementById('pvpLobbyGuestColor').style.borderColor = pvpGuestColor;
+                    document.getElementById('pvpLobbyGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj);
                     document.getElementById('pvpGuestControls').classList.remove('hidden');
                     
-                    setHandshakeStatus("Verbindung steht. Warte auf Host-Daten...");
+                    setHandshakeStatus(t('hsWaitHost'));
                 }
             };
 
@@ -4188,20 +4227,33 @@ function resetSim() {
             pvpConn.on('data', data => {
                 if (data.type === 'HOST_READY' && !isPvPHost) {
                     try {
-                        setHandshakeStatus("Host-Daten empfangen. Komprimiere und sende eigene Roboter-Daten...");
+                        setHandshakeStatus(t('hsSendGuest'));
                         let hostData = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
                         
                         pvpHostName = hostData.teamName;
                         pvpHostColor = hostData.teamColor;
                         pvpHostLogoObj = hostData.logo;
                         
+                        // --- KOLLISIONSLOGIK FÜR FARBEN (GAST PASST SICH AN) ---
+                        let resolvedGuestColor = playerTeamColor;
+                        let resolvedGuestLogo = JSON.parse(JSON.stringify(playerLogo));
+                        
+                        if (pvpHostColor === playerTeamColor) {
+                            resolvedGuestColor = playerAltColor;
+                            resolvedGuestLogo.bgColor = playerAltColor;
+                        }
+                        
+                        pvpGuestColor = resolvedGuestColor;
+                        pvpGuestLogoObj = resolvedGuestLogo;
+                        
                         document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
-                        document.getElementById('pvpLobbyHostColor').style.borderColor = pvpHostColor;
+                        document.getElementById('pvpLobbyHostLogo').innerHTML = getLogoSVG(pvpHostLogoObj);
+                        document.getElementById('pvpLobbyGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj);
                         
                         let exportData = {
                             teamName: playerTeamName,
-                            teamColor: playerTeamColor,
-                            logo: playerLogo,
+                            teamColor: resolvedGuestColor,
+                            logo: resolvedGuestLogo,
                             teams: teams.map(t => ({ id: t.id, weight: t.weight, name: t.name, workspaceJSON: t.workspaceJSON })),
                             sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal}))
                         };
@@ -4211,13 +4263,13 @@ function resetSim() {
                             payload: JSON.stringify(exportData)
                         });
                         
-                        setHandshakeStatus("Daten gesendet. Warte auf Start...", true);
+                        setHandshakeStatus(t('hsWaitStart'), true);
                     } catch(e) {
                         console.error("Error parsing host data", e);
                     }
                 } else if (data.type === 'GUEST_READY' && isPvPHost) {
                     try {
-                        setHandshakeStatus("Gast-Daten empfangen. Match kann starten!", true);
+                        setHandshakeStatus(t('hsMatchReady'), true);
                         guestTeamData = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
                         
                         pvpGuestName = guestTeamData.teamName;
@@ -4225,7 +4277,7 @@ function resetSim() {
                         pvpGuestLogoObj = guestTeamData.logo;
                         
                         document.getElementById('pvpLobbyGuestName').innerText = pvpGuestName;
-                        document.getElementById('pvpLobbyGuestColor').style.borderColor = pvpGuestColor;
+                        document.getElementById('pvpLobbyGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj);
                         
                         let btnStart = document.getElementById('btnStartMatch');
                         if (btnStart) {
@@ -4308,6 +4360,7 @@ function resetSim() {
             isPvPHost = false;
             pvpMatchInProgress = false;
             simRunning = false;
+            pveState.status = 'STOPPED';
             cancelAnimationFrame(simLoopId);
             
             document.getElementById('pvpMatchUI').classList.add('hidden');
