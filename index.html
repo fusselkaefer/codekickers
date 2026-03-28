@@ -2717,9 +2717,8 @@ function resetSim() {
                     let enemyId = playerMatch.home === 0 ? playerMatch.away : playerMatch.home;
                     currentPvEEnemyTeam = leagueState.teams.find(t => t.id === enemyId);
                 } else {
-                    // Pick a random League AI Team for Quick Match (avoiding same color if possible)
-                    let availableTeams = LEAGUE_AI_TEAMS_CONFIG.filter(t => t.color !== playerTeamColor);
-                    if (availableTeams.length === 0) availableTeams = LEAGUE_AI_TEAMS_CONFIG;
+                    // Pick a random League AI Team for Quick Match
+                    let availableTeams = LEAGUE_AI_TEAMS_CONFIG;
                     let randomIndex = Math.floor(Math.random() * availableTeams.length);
                     let aiConfig = availableTeams[randomIndex];
                     currentPvEEnemyTeam = {
