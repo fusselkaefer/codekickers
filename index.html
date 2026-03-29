@@ -189,7 +189,7 @@
 
                 <!-- Test Actions directly below robot -->
                 <div class="flex gap-2 mt-2">
-                    <button onclick="testKickAnim()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold py-1.5 rounded shadow border border-blue-700 transition-colors uppercase" data-i18n="testKickBtn">🦵 Test Kick</button>
+                    <button onclick="testKickAnim()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold py-1.5 rounded shadow border border-blue-700 transition-colors uppercase" data-i18n="testKickBtn">🦿 Test Kick</button>
                     <button onclick="testSensorsAnim()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold py-1.5 rounded shadow border border-emerald-700 transition-colors uppercase" data-i18n="testSensorsBtn">📡 Test Sensors</button>
                 </div>
 
@@ -208,9 +208,12 @@
             <div class="flex-1 flex flex-col p-3 relative bg-slate-800 min-h-[220px]">
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-md text-slate-300 font-bold uppercase tracking-wider" data-i18n="testArenaTitle">Test Arena (1v1)</h2>
-                    <button id="btnPlay" onclick="toggleSim()" class="bg-green-600 hover:bg-green-500 border border-green-700 px-4 py-1.5 rounded shadow transition-all transform hover:scale-105 flex items-center text-white text-xs font-bold uppercase">
-                        <span data-i18n="startBtn">▶ Start Test</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="btnLabAlgo" onclick="toggleAlgo()" class="bg-slate-800 border border-slate-700 text-slate-400 hover:text-white px-2 py-1.5 rounded shadow-sm transition-all text-[10px] font-bold uppercase" data-i18n="btnAlgo">Show Algorithm</button>
+                        <button id="btnPlay" onclick="toggleSim()" class="bg-green-600 hover:bg-green-500 border border-green-700 px-4 py-1.5 rounded shadow transition-all transform hover:scale-105 flex items-center text-white text-xs font-bold uppercase">
+                            <span data-i18n="startBtn">▶ Start Test</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex-1 w-full relative rounded-lg overflow-hidden border border-slate-700 shadow-inner grass-bg" id="canvasContainer">
                     <canvas id="testCanvas" class="absolute inset-0 w-full h-full"></canvas>
@@ -242,6 +245,7 @@
 
             <!-- Timer & Controls -->
             <div class="flex items-center gap-6">
+                <button id="btnPvEAlgo" onclick="toggleAlgo()" class="bg-slate-800 border border-slate-700 text-slate-400 hover:text-white px-3 py-1.5 rounded-lg shadow-sm transition-all text-[10px] md:text-xs font-bold uppercase" data-i18n="btnAlgo">Show Algorithm</button>
                 <div class="flex flex-col items-center w-24">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="halfDisplay">1st Half</span>
                     <span class="text-2xl font-bold text-yellow-400 font-mono leading-none" id="timeDisplay">01:30</span>
@@ -468,6 +472,7 @@
 
                 <!-- Timer & Controls -->
                 <div class="flex items-center gap-4 md:gap-6">
+                    <button id="btnPvPAlgo" onclick="toggleAlgo()" class="bg-slate-800 border border-slate-700 text-slate-400 hover:text-white px-3 py-1.5 rounded-lg shadow-sm transition-all text-[10px] md:text-xs font-bold uppercase" data-i18n="btnAlgo">Show Algorithm</button>
                     <div class="flex flex-col items-center w-20 md:w-24">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="pvpHalfDisplay">1st Half</span>
                         <span class="text-2xl font-bold text-yellow-400 font-mono leading-none" id="pvpTimeDisplay">01:30</span>
@@ -659,6 +664,7 @@
         let db;
         const DB_NAME = "RoboBallerDB";
         let isLoadingData = true;
+        let showAlgorithm = false; // Global State für die UI-Einblendung
 
         // --- SOUND ENGINE (Web Audio API Synthesizer) ---
         const SoundEngine = {
@@ -676,143 +682,247 @@
                 if (this.ctx.state === 'suspended') this.ctx.resume();
             },
 
+            // Generiert programmatisch einen Hallraum für ein riesiges Stadion (Impulse Response)
+            _createStadiumReverb: function() {
+                let dur = 3.0; // 3 Sekunden Hall-Fahne
+                let len = this.ctx.sampleRate * dur;
+                let buffer = this.ctx.createBuffer(2, len, this.ctx.sampleRate);
+                for (let c = 0; c < 2; c++) {
+                    let data = buffer.getChannelData(c);
+                    let lastOut = 0; 
+                    for (let i = 0; i < len; i++) {
+                        let t = i / len;
+                        let noise = Math.random() * 2 - 1;
+                        // Sanfter, exponentieller Decay
+                        let decay = Math.pow(1 - t, 4);
+                        // Starker Lowpass-Filter (dumpfer Hall für weite, offene Distanzen)
+                        lastOut = lastOut + 0.08 * (noise - lastOut); 
+                        data[i] = lastOut * decay * 0.4;
+                    }
+                }
+                return buffer;
+            },
+
+            _createCrowdBuffer: function(durationSecs) {
+                let bufferSize = this.ctx.sampleRate * durationSecs;
+                let buffer = this.ctx.createBuffer(2, bufferSize, this.ctx.sampleRate);
+                
+                // Pre-calculate fan drums (Kurze, anstachelnde Trommel-Rhythmen)
+                let drumHits = [[], []];
+                let patterns = [
+                    [0, 0.4, 0.8, 1.0, 1.2], // Klassisches "Bumm... Bumm... Bum-Bum-Bumm"
+                    [0, 0.25, 0.5, 0.75, 1.0], // Gleichmäßiger Roll
+                    [0, 0.33, 0.66, 1.0, 1.33, 1.66], // Schnelle Triolen
+                    [0, 0.5, 1.0] // Langsame, wuchtige Schläge
+                ];
+                for(let c=0; c<2; c++) {
+                    for(let i=0; i<durationSecs; i+=Math.random()*8.0+4.0) {
+                        if(Math.random() > 0.7) { 
+                            let pat = patterns[Math.floor(Math.random() * patterns.length)];
+                            let startSample = Math.floor((i + Math.random()) * this.ctx.sampleRate);
+                            pat.forEach(t => drumHits[c].push(startSample + Math.floor(t * this.ctx.sampleRate)));
+                        }
+                    }
+                    drumHits[c].sort((a,b) => a-b); 
+                }
+
+                // Generierung pro Kanal für echte Stereo-Separation (Multi-Track Feel)
+                for (let c = 0; c < 2; c++) {
+                    let data = buffer.getChannelData(c);
+                    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                    
+                    let applauseTarget = 0.5;
+                    let applauseSwell = 0.5;
+                    let activeClaps = [];
+                    
+                    let macroVolume = 0.8;
+                    
+                    let nextDrumIdx = 0;
+                    let activeDrums = [];
+
+                    for (let i = 0; i < bufferSize; i++) {
+                        let white = Math.random() * 2 - 1;
+                        
+                        // 1. Pink Noise filter (Paul Kellett method) for warm base
+                        b0 = 0.99886 * b0 + white * 0.0555179;
+                        b1 = 0.99332 * b1 + white * 0.0750759;
+                        b2 = 0.96900 * b2 + white * 0.1538520;
+                        b3 = 0.86650 * b3 + white * 0.3104856;
+                        b4 = 0.55000 * b4 + white * 0.5329522;
+                        b5 = -0.7616 * b5 - white * 0.0168980;
+                        let pink = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+                        b6 = white * 0.115926;
+                        
+                        // 2. Brownian mix for sub-rumble
+                        let brown = (b0 + b1 + b2) * 0.05; 
+                        
+                        // 3. Organisches Grundrauschen
+                        if (i % 4000 === 0) macroVolume += (Math.random() * 0.1 - 0.05);
+                        macroVolume = Math.max(0.6, Math.min(1.0, macroVolume)); 
+                        let baseMurmur = (pink + brown) * macroVolume;
+
+                        // 4. Claps (Aufbauende Euphorie-Wellen)
+                        if (Math.random() > 0.9999) applauseTarget = Math.random() * 0.6 + 0.4; 
+                        applauseSwell += (applauseTarget - applauseSwell) * 0.00002; 
+                        
+                        let clapProb = Math.pow(applauseSwell, 3) * 0.001;
+                        if (Math.random() < clapProb) {
+                            activeClaps.push({ amp: Math.random() * 0.3 + 0.1, life: 1.0, filter: 0 });
+                        }
+
+                        let clapsOut = 0;
+                        for (let k = activeClaps.length - 1; k >= 0; k--) {
+                            let clap = activeClaps[k];
+                            clap.filter = 0.7 * clap.filter + 0.3 * (Math.random() * 2 - 1); 
+                            clapsOut += clap.filter * clap.amp * clap.life;
+                            
+                            clap.life *= 0.95; 
+                            if (clap.life < 0.01) activeClaps.splice(k, 1);
+                        }
+
+                        // 5. Fan Trommeln
+                        if (nextDrumIdx < drumHits[c].length && i === drumHits[c][nextDrumIdx]) {
+                            activeDrums.push({ phase: 0, life: 1.0 });
+                            nextDrumIdx++;
+                        }
+                        
+                        let drumsOut = 0;
+                        for (let k = activeDrums.length - 1; k >= 0; k--) {
+                            let d = activeDrums[k];
+                            // Pitch envelope für den tiefen "Bumm"-Sound
+                            let freq = 40 + 80 * Math.pow(d.life, 3);
+                            d.phase += 2 * Math.PI * freq / this.ctx.sampleRate;
+                            
+                            // Kurzes Rauschen für den Anschlag (Kick/Schlägel)
+                            let noise = (Math.random() * 2 - 1) * d.life * 0.3; 
+                            
+                            // Amplitude
+                            drumsOut += (Math.sin(d.phase) * 0.7 + noise) * Math.pow(d.life, 1.5) * 0.15; 
+                            
+                            d.life -= 0.0001; // Ca. 0.22 Sekunden Ausklingzeit
+                            if (d.life <= 0) activeDrums.splice(k, 1);
+                        }
+
+                        // Zusammenmischen OHNE Pfeifen
+                        data[i] = baseMurmur * 0.5 + clapsOut + drumsOut;
+                    }
+                }
+                return buffer;
+            },
+
             initContinuousLoops: function() {
                 if (this.audienceInitialized) return;
                 this.audienceInitialized = true;
                 
-                // 1. Audience Loop (White Noise mit dynamischem Filter)
-                let bufferSize = this.ctx.sampleRate * 2; 
-                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                let data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1; 
+                // Continuous stadium crowd ambience
+                let buffer = this._createCrowdBuffer(12.0); 
                 
                 this.audienceSource = this.ctx.createBufferSource();
                 this.audienceSource.buffer = buffer;
                 this.audienceSource.loop = true;
                 
+                this.audienceHighpass = this.ctx.createBiquadFilter();
+                this.audienceHighpass.type = 'highpass';
+                this.audienceHighpass.frequency.value = 250;
+                
+                this.audienceLowpass = this.ctx.createBiquadFilter();
+                this.audienceLowpass.type = 'lowpass';
+                this.audienceLowpass.frequency.value = 4500;
+                
                 this.audienceFilter = this.ctx.createBiquadFilter();
-                this.audienceFilter.type = 'lowpass';
-                this.audienceFilter.frequency.value = 300; // Ruhiges, tiefes Rauschen
+                this.audienceFilter.type = 'bandpass';
+                this.audienceFilter.frequency.value = 600; 
+                this.audienceFilter.Q.value = 0.5;
+
+                // --- REVERB (HALL) SETUP ---
+                this.audienceConvolver = this.ctx.createConvolver();
+                this.audienceConvolver.buffer = this._createStadiumReverb();
+                
+                this.audienceDryGain = this.ctx.createGain();
+                this.audienceDryGain.gain.value = 0.5; // Direktes Signal (Trocken) etwas leiser
+                
+                this.audienceWetGain = this.ctx.createGain();
+                this.audienceWetGain.gain.value = 0.6; // Hall Signal (Nass) etwas leiser
+                // ---------------------------
+
+                // Formant simulation: extrem langsam, kein fühlbarer Rhythmus
+                this.audienceFormantLFO = this.ctx.createOscillator();
+                this.audienceFormantLFO.type = 'sine';
+                this.audienceFormantLFO.frequency.value = 0.05; 
+                this.audienceFormantGain = this.ctx.createGain();
+                this.audienceFormantGain.gain.value = 80; 
+                this.audienceFormantLFO.connect(this.audienceFormantGain);
+                this.audienceFormantGain.connect(this.audienceFilter.frequency);
+                
+                // Globale Volumen-Modulation: extrem subtil
+                this.audienceLFO = this.ctx.createOscillator();
+                this.audienceLFO.type = 'sine';
+                this.audienceLFO.frequency.value = 0.05; 
+                this.audienceLFOGain = this.ctx.createGain();
+                this.audienceLFOGain.gain.value = 0.15; 
+                this.audienceLFO.connect(this.audienceLFOGain);
+                
+                this.audienceWaveGain = this.ctx.createGain();
+                this.audienceWaveGain.gain.value = 0.85; 
+                this.audienceLFOGain.connect(this.audienceWaveGain.gain);
                 
                 this.audienceGain = this.ctx.createGain();
                 this.audienceGain.gain.value = 0; 
                 
-                this.audienceSource.connect(this.audienceFilter);
-                this.audienceFilter.connect(this.audienceGain);
+                // --- Routing-Kette ---
+                this.audienceSource.connect(this.audienceHighpass);
+                this.audienceHighpass.connect(this.audienceLowpass);
+                this.audienceLowpass.connect(this.audienceFilter);
+                
+                // Aufteilen des Signals in Dry (direkt) und Wet (Hall)
+                this.audienceFilter.connect(this.audienceDryGain);
+                this.audienceFilter.connect(this.audienceConvolver);
+                this.audienceConvolver.connect(this.audienceWetGain);
+                
+                // Wieder zusammenmischen in die Wellen-Modulation
+                this.audienceDryGain.connect(this.audienceWaveGain);
+                this.audienceWetGain.connect(this.audienceWaveGain);
+                
+                this.audienceWaveGain.connect(this.audienceGain);
                 this.audienceGain.connect(this.masterGain);
+                
                 this.audienceSource.start();
+                this.audienceLFO.start();
+                this.audienceFormantLFO.start();
             },
 
             updateDynamics: function(ballX, ballY, bots, cW, cH) {
                 if (!this.ctx || !this.audienceInitialized) return;
                 const now = this.ctx.currentTime;
 
-                // --- Audience Tension (Je näher am Tor, desto lauter/aufgeregter) ---
                 let distLeft = ballX;
                 let distRight = cW - ballX;
                 let distGoal = Math.min(distLeft, distRight);
                 
-                let tension = 1.0 - Math.min(1.0, distGoal / (cW * 0.4)); // 0 = Mitte, 1 = Torlinie
+                let tension = 1.0 - Math.min(1.0, distGoal / (cW * 0.4)); 
                 
-                // Trubel nur, wenn Ball auch in der Höhe des Tores ist (Y-Achse)
                 let isGoalY = (ballY > cH/2 - 100 && ballY < cH/2 + 100);
                 if (!isGoalY) tension *= 0.3; 
 
-                let targetFreq = 300 + tension * 2000;
-                let targetGain = 0.02 + tension * 0.15;
+                // EQ und Lautstärke dynamisch nach Torspannung (Grundlautstärke angehoben)
+                let targetFreq = 500 + tension * 1000; // Vorher 400
+                let targetGain = 0.06 + tension * 0.15; // Vorher 0.01, jetzt 0.06 für dauerhaftes Grundmurmeln
                 
                 this.audienceFilter.frequency.setTargetAtTime(targetFreq, now, 0.5); 
                 this.audienceGain.gain.setTargetAtTime(targetGain, now, 0.5);
+                
+                // Die Modulation bleibt langsam, wird nur unmerklich schneller
+                this.audienceLFO.frequency.setTargetAtTime(0.05 + tension * 0.05, now, 1.0);
             },
 
             muteContinuous: function() {
                 if (!this.ctx || !this.audienceInitialized) return;
                 const now = this.ctx.currentTime;
-                this.audienceGain.gain.setTargetAtTime(0, now, 0.1);
+                // Alle alten Fade-Anweisungen abbrechen und sofort zuverlässig leiser werden
+                this.audienceGain.gain.cancelScheduledValues(now);
+                this.audienceGain.gain.setTargetAtTime(0, now, 0.05);
             },
             
-            // --- R2D2 BOT EMOTION SYNTHS ---
-            playBotHappy: function() {
-                this.frameTriggers.push('bh');
-                this._playBotHappyLocal();
-            },
-            _playBotHappyLocal: function() {
-                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
-                this.lastBotSound = this.ctx.currentTime;
-                let t = this.ctx.currentTime;
-                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
-                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
-                
-                osc.frequency.setValueAtTime(1200, t);
-                osc.frequency.setValueAtTime(1600, t + 0.1);
-                osc.frequency.setValueAtTime(2100, t + 0.2);
-                osc.frequency.setValueAtTime(2800, t + 0.3);
-                
-                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
-                gain.gain.setValueAtTime(0.4, t + 0.3); gain.gain.linearRampToValueAtTime(0, t + 0.4);
-                osc.start(t); osc.stop(t + 0.4);
-            },
-
-            playBotSad: function() {
-                this.frameTriggers.push('bs');
-                this._playBotSadLocal();
-            },
-            _playBotSadLocal: function() {
-                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
-                this.lastBotSound = this.ctx.currentTime;
-                let t = this.ctx.currentTime;
-                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
-                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
-                
-                osc.frequency.setValueAtTime(800, t);
-                osc.frequency.exponentialRampToValueAtTime(250, t + 0.8);
-                
-                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.4, t + 0.1);
-                gain.gain.setValueAtTime(0.4, t + 0.6); gain.gain.linearRampToValueAtTime(0, t + 0.8);
-                osc.start(t); osc.stop(t + 0.8);
-            },
-
-            playBotAngry: function() {
-                this.frameTriggers.push('ba');
-                this._playBotAngryLocal();
-            },
-            _playBotAngryLocal: function() {
-                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
-                this.lastBotSound = this.ctx.currentTime;
-                let t = this.ctx.currentTime;
-                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
-                osc.type = 'square'; osc.connect(gain); gain.connect(this.masterGain);
-                
-                osc.frequency.setValueAtTime(900, t);
-                osc.frequency.setValueAtTime(300, t + 0.06);
-                osc.frequency.setValueAtTime(1100, t + 0.12);
-                osc.frequency.setValueAtTime(250, t + 0.18);
-                
-                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
-                gain.gain.setValueAtTime(0.2, t + 0.2); gain.gain.linearRampToValueAtTime(0, t + 0.25);
-                osc.start(t); osc.stop(t + 0.25);
-            },
-
-            playBotConfused: function() {
-                this.frameTriggers.push('bc');
-                this._playBotConfusedLocal();
-            },
-            _playBotConfusedLocal: function() {
-                if (!this.ctx || this.ctx.currentTime - this.lastBotSound < 0.3) return;
-                this.lastBotSound = this.ctx.currentTime;
-                let t = this.ctx.currentTime;
-                let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
-                osc.type = 'sine'; osc.connect(gain); gain.connect(this.masterGain);
-                
-                osc.frequency.setValueAtTime(600, t);
-                osc.frequency.linearRampToValueAtTime(1200, t + 0.25);
-                osc.frequency.linearRampToValueAtTime(600, t + 0.5);
-                
-                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.3, t + 0.1);
-                gain.gain.setValueAtTime(0.3, t + 0.4); gain.gain.linearRampToValueAtTime(0, t + 0.5);
-                osc.start(t); osc.stop(t + 0.5);
-            },
-
             // --- STANDARD SFX ---
             playKick: function() {
                 this.frameTriggers.push('k');
@@ -827,14 +937,14 @@
                 let osc = this.ctx.createOscillator();
                 let gain = this.ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(100, this.ctx.currentTime); // Lower start frequency
                 osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(1.2, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.7, this.ctx.currentTime); // Quieter (was 1.2)
                 gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
                 osc.connect(gain); gain.connect(this.masterGain);
                 osc.start(); osc.stop(this.ctx.currentTime + 0.15);
 
-                // 2. Harter Snap (Noise Burst für den Aufprall)
+                // 2. Dumpferer Snap (Noise Burst für den Aufprall)
                 let bufferSize = this.ctx.sampleRate * 0.05; 
                 let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -843,10 +953,10 @@
                 let noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
                 let noiseFilter = this.ctx.createBiquadFilter();
-                noiseFilter.type = 'bandpass';
-                noiseFilter.frequency.value = 800;
+                noiseFilter.type = 'lowpass'; // Lowpass statt Bandpass für weniger "helle" Anteile
+                noiseFilter.frequency.value = 600;
                 let noiseGain = this.ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                noiseGain.gain.setValueAtTime(0.2, this.ctx.currentTime); // Quieter (was 0.5)
                 noiseGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
                 noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(this.masterGain);
                 noise.start(); noise.stop(this.ctx.currentTime + 0.05);
@@ -894,31 +1004,56 @@
                 gain.gain.setValueAtTime(0.7, this.ctx.currentTime + dur - 0.1);
                 gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + dur);
                 
+                // Hall für den Schiedsrichter-Pfiff entfernt (wirkt nur noch auf Crowd)
+                
                 osc.connect(gain); gain.connect(this.masterGain);
                 osc.start(); vib.start(); osc.stop(this.ctx.currentTime + dur); vib.stop(this.ctx.currentTime + dur);
             },
             
             playCheer: function() {
                 if (!this.ctx) return;
-                let bufferSize = this.ctx.sampleRate * 4; 
-                let buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-                let data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1; // White noise
+                let now = this.ctx.currentTime;
                 
+                // Dense, warm, organic cheer burst (stereo)
+                let buffer = this._createCrowdBuffer(6.0);
                 let noise = this.ctx.createBufferSource();
                 noise.buffer = buffer;
                 
-                let filter1 = this.ctx.createBiquadFilter(); filter1.type = 'lowpass'; filter1.frequency.value = 2500;
-                let filter2 = this.ctx.createBiquadFilter(); filter2.type = 'highpass'; filter2.frequency.value = 500;
+                // Human voice range filters
+                let highpass = this.ctx.createBiquadFilter();
+                highpass.type = 'highpass'; highpass.frequency.value = 200;
                 
+                let lowpass = this.ctx.createBiquadFilter();
+                lowpass.type = 'lowpass'; lowpass.frequency.value = 5000;
+                
+                let bandpass = this.ctx.createBiquadFilter();
+                bandpass.type = 'bandpass'; bandpass.frequency.value = 1500; bandpass.Q.value = 0.4;
+                
+                let lfo = this.ctx.createOscillator();
+                lfo.type = 'sine'; lfo.frequency.value = 0.2;
+                let lfoGain = this.ctx.createGain(); lfoGain.gain.value = 0.2;
+                lfo.connect(lfoGain);
+                
+                let waveGain = this.ctx.createGain();
+                waveGain.gain.value = 0.8;
+                lfoGain.connect(waveGain.gain);
+                
+                // Swell / Fade Envelope
                 let gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 0.5);
-                gain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 2.5);
-                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 4.0);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.9, now + 0.5);
+                gain.gain.linearRampToValueAtTime(0.9, now + 3.0);
+                gain.gain.linearRampToValueAtTime(0, now + 5.8);
                 
-                noise.connect(filter1); filter1.connect(filter2); filter2.connect(gain); gain.connect(this.masterGain);
-                noise.start();
+                noise.connect(highpass); highpass.connect(lowpass); lowpass.connect(bandpass);
+                
+                // Hall für Torjubel entfernt - nur das rohe Crowd-Signal
+                bandpass.connect(waveGain);
+                
+                waveGain.connect(gain); gain.connect(this.masterGain);
+                
+                noise.start(now); lfo.start(now);
+                noise.stop(now + 6.0); lfo.stop(now + 6.0);
             }
         };
 
@@ -943,7 +1078,7 @@
             en: {
                 navLab: "🛠️ Construction", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Construction",
-                testKickBtn: "🦵 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
+                testKickBtn: "🦿 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
                 clickPlaceHint: "Click to place/remove", weightFast: "Fast", weightHeavy: "Heavy",
                 testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Start Test", stopBtn: "⏹ Stop Test",
                 matchStartBtn: "▶ Start Match", matchStopBtn: "⏹ End Match", half1: "1st Half", half2: "2nd Half",
@@ -958,6 +1093,7 @@
                 invalidFile: "Invalid file format!", environment: "Environment",
                 colorBlue: "Blue", colorRed: "Red", colorGreen: "Green", colorPurple: "Purple", colorYellow: "Yellow",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "White", colorGray: "Gray",
+                btnAlgo: "Show Algorithm", actWait: "Wait", actKick: "Kick", actSprint: "Sprint", actMove: "Move", actTurn: "Turn",
                 // Blockly
                 catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators", catComms: "Communication",
                 optBall: "Ball", optAny: "Any Sensor", optWall: "Wall", optEnemy: "Enemy", optTeammate: "Teammate", optTeammateAny: "Any Teammate", optEnemyGoal: "Enemy Goal", optOwnGoal: "Own Goal",
@@ -1061,7 +1197,7 @@
             de: {
                 navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Konstruktion",
-                testKickBtn: "🦵 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
+                testKickBtn: "🦿 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
                 clickPlaceHint: "Klicken zum Platzieren/Entfernen", weightFast: "Schnell", weightHeavy: "Schwer",
                 testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Test Starten", stopBtn: "⏹ Test Stoppen",
                 matchStartBtn: "▶ Match Starten", matchStopBtn: "⏹ Match Stoppen", half1: "1. Halbzeit", half2: "2. Halbzeit",
@@ -1076,6 +1212,7 @@
                 invalidFile: "Ungültige Datei!", environment: "Umgebung",
                 colorBlue: "Blau", colorRed: "Rot", colorGreen: "Grün", colorPurple: "Lila", colorYellow: "Gelb",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "Weiß", colorGray: "Grau",
+                btnAlgo: "Zeige Algorithmus", actWait: "Warten", actKick: "Kick", actSprint: "Sprint", actMove: "Fahren", actTurn: "Drehen",
                 // Blockly
                 catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren", catComms: "Kommunikation",
                 optBall: "Ball", optAny: "Irgendein Sensor", optWall: "Wand", optEnemy: "Gegner", optTeammate: "Teammitglied", optTeammateAny: "Irgendein Teammitglied", optEnemyGoal: "Gegnerisches Tor", optOwnGoal: "Eigenes Tor",
@@ -1189,6 +1326,25 @@
         function closePrivacyModal() {
             document.getElementById('privacyModal').classList.add('hidden');
             document.getElementById('privacyModal').classList.remove('flex');
+        }
+
+        function toggleAlgo() {
+            showAlgorithm = !showAlgorithm;
+            let btns = [document.getElementById('btnLabAlgo'), document.getElementById('btnPvEAlgo'), document.getElementById('btnPvPAlgo')];
+            btns.forEach(btn => {
+                if(btn) {
+                    if(showAlgorithm) {
+                        btn.classList.replace('text-slate-400', 'text-white');
+                        btn.classList.replace('bg-slate-800', 'bg-blue-600');
+                        btn.classList.replace('border-slate-700', 'border-blue-500');
+                    } else {
+                        btn.classList.replace('text-white', 'text-slate-400');
+                        btn.classList.replace('bg-blue-600', 'bg-slate-800');
+                        btn.classList.replace('border-blue-500', 'border-slate-700');
+                    }
+                }
+            });
+            if (!simRunning) drawSim();
         }
 
         function handlePvPClick() {
@@ -2692,6 +2848,7 @@
         let isPreviewSensing = false;
 
         function testKickAnim() {
+            SoundEngine.init();
             isPreviewKicking = true;
             previewKickTimer = 25; 
             renderRobotPreview();
@@ -2826,8 +2983,8 @@
         let simLoopId;
         let lastFrameTime = 0;
         
-        let testRobot = { botId: 0, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: 5, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: "" };
-        let testEnemy = { botId: 3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: 5, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: "" };
+        let testRobot = { botId: 0, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: 5, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: "" };
+        let testEnemy = { botId: 3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: 5, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: "" };
         let testBall = { x: 0, y: 0, vx: 0, vy: 0, r: 8, lastTouch: null };
         let testWorld = { width: 0, height: 0 };
 
@@ -2971,13 +3128,13 @@
                 drawSim();
 
                 if (isLeagueMatch) {
-                    isLeagueMatch = false;
+                    processLeagueMatch(pveState.scorePlayer, pveState.scoreEnemy);
                     setMode('LEAGUE');
                 }
             }
         }
 
-function resetSim() {
+        function resetSim() {
             matchPlayerColor = playerTeamColor; // Sorge dafür, dass im Lab die normale Farbe genutzt wird
             testRobot.botId = currentRobotId;
             testRobot.weight = teams[currentRobotId].weight;
@@ -2990,6 +3147,10 @@ function resetSim() {
             testRobot.battery = 100;
             testRobot.isCharging = false;
             testRobot.magnetOn = false;
+            testRobot.isMovingFast = false;
+            testRobot.isMovingNormal = false;
+            testRobot.isTurning = false;
+            testRobot.isWaiting = false;
             testRobot.kx = 0;
             testRobot.ky = 0;
             testRobot.sentSignals = [];
@@ -3008,6 +3169,10 @@ function resetSim() {
             testEnemy.battery = 100;
             testEnemy.isCharging = false;
             testEnemy.magnetOn = false;
+            testEnemy.isMovingFast = false;
+            testEnemy.isMovingNormal = false;
+            testEnemy.isTurning = false;
+            testEnemy.isWaiting = false;
             testEnemy.kx = 0;
             testEnemy.ky = 0;
             testEnemy.sentSignals = [];
@@ -3068,13 +3233,13 @@ function resetSim() {
             updateTeamUI(); // update top bar labels
 
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
                 
                 let eName = currentPvEEnemyTeam.bots[i].name;
                 let eWeight = currentPvEEnemyTeam.bots[i].w || currentPvEEnemyTeam.bots[i].weight;
                 let archIndex = currentPvEEnemyTeam.bots[i].arch !== undefined ? currentPvEEnemyTeam.bots[i].arch : (i % 10);
                 
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
                 applyArchetypeToEnemy(i, archIndex, eWeight, eName);
                 
                 // Update HUD Labels
@@ -3108,6 +3273,10 @@ function resetSim() {
                 pvePlayerBots[i].isCharging = false;
                 pvePlayerBots[i].isKicking = false;
                 pvePlayerBots[i].magnetOn = false;
+                pvePlayerBots[i].isMovingFast = false;
+                pvePlayerBots[i].isMovingNormal = false;
+                pvePlayerBots[i].isTurning = false;
+                pvePlayerBots[i].isWaiting = false;
                 pvePlayerBots[i].kx = 0;
                 pvePlayerBots[i].ky = 0;
                 pvePlayerBots[i].sentSignals = [];
@@ -3119,6 +3288,10 @@ function resetSim() {
                 pveEnemyBots[i].isCharging = false;
                 pveEnemyBots[i].isKicking = false;
                 pveEnemyBots[i].magnetOn = false;
+                pveEnemyBots[i].isMovingFast = false;
+                pveEnemyBots[i].isMovingNormal = false;
+                pveEnemyBots[i].isTurning = false;
+                pveEnemyBots[i].isWaiting = false;
                 pveEnemyBots[i].kx = 0;
                 pveEnemyBots[i].ky = 0;
                 pveEnemyBots[i].sentSignals = [];
@@ -3186,7 +3359,6 @@ function resetSim() {
             SoundEngine.playWhistle(true);
             setTimeout(() => SoundEngine.playWhistle(true), 400); // Doppelpfiff für Tor
             SoundEngine.playCheer();
-            SoundEngine.playBotHappy(); // Roboter jubeln!
             
             if(currentMode === 'LAB') {
                 overlayCountdown = 180;
@@ -3452,6 +3624,8 @@ function resetSim() {
             botContexts.forEach(bCtx => {
                 bCtx.bot.isMovingFast = false;
                 bCtx.bot.isMovingNormal = false;
+                bCtx.bot.isTurning = false;
+                bCtx.bot.isWaiting = false;
 
                 bCtx.triggers.forEach(block => {
                     let triggered = false;
@@ -3566,6 +3740,7 @@ function resetSim() {
                         thread.currentAction = null;
                     }
                 } else if (act.type === 'wait') {
+                    bot.isWaiting = true;
                     act.ticks--;
                     if (act.ticks <= 0) thread.currentAction = null;
                 }
@@ -3600,6 +3775,7 @@ function resetSim() {
                     let targetRads = (degrees * Math.PI) / 180;
                     if (type === 'turn_l') targetRads = -targetRads; 
                     
+                    bot.isTurning = true;
                     thread.currentAction = { 
                         type: 'turn', targetDelta: targetRads, turnedAbs: 0, dir: Math.sign(targetRads) || 1
                     };
@@ -3658,6 +3834,7 @@ function resetSim() {
                     while(diff < -Math.PI) diff += Math.PI*2;
 
                     if (Math.abs(diff) > 0.02) {
+                        bot.isTurning = true;
                         thread.currentAction = { 
                             type: 'turn', targetDelta: diff, turnedAbs: 0, dir: Math.sign(diff) || 1
                         };
@@ -3797,7 +3974,6 @@ function resetSim() {
 
                     if (otherBot.weight < bot.weight && otherBot.magnetOn) {
                         otherBot.magnetOn = false;
-                        SoundEngine.playBotAngry(); // Roboter regt sich extrem über den Rempler und Ballverlust auf!
                     }
                 }
             }
@@ -3976,7 +4152,6 @@ function resetSim() {
                     if (pveState.cornerTicks >= 600) { // 10 Sekunden (60 Ticks/Sekunde)
                         pveState.cornerTicks = 0;
                         SoundEngine.playWhistle(true);
-                        SoundEngine.playBotConfused(); // Verwirrter Bot-Sound weil es nicht weitergeht
                         showMatchOverlay(t('stalemate'), t('newKickoff'), 180);
                         return;
                     }
@@ -4314,20 +4489,101 @@ function resetSim() {
                 ctx.fillStyle = hudColor;
                 ctx.fill();
                 
-                // Name Box
+                let showAlgoForBot = showAlgorithm && !item.isE; 
+
+                // Größe der Box anpassen je nachdem ob Algorithmus angezeigt wird
                 ctx.font = 'bold 11px system-ui, sans-serif';
-                let textW = ctx.measureText(botLabel).width + 12;
+                let nameW = ctx.measureText(botLabel).width;
+                let boxW = showAlgoForBot ? Math.max(nameW + 16, 80) : nameW + 12;
+                let boxH = showAlgoForBot ? 28 : 16;
+                let boxY = showAlgoForBot ? -34 : -22;
+
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
                 ctx.beginPath();
-                if(ctx.roundRect) ctx.roundRect(-textW/2, -22, textW, 16, 4);
-                else ctx.rect(-textW/2, -22, textW, 16);
+                if(ctx.roundRect) ctx.roundRect(-boxW/2, boxY, boxW, boxH, 4);
+                else ctx.rect(-boxW/2, boxY, boxW, boxH);
                 ctx.fill();
                 
-                // Name Text
+                // Name Text (Nach oben verschoben, wenn Ticker aktiv ist)
                 ctx.fillStyle = hudColor;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
-                ctx.fillText(botLabel, 0, -7);
+                ctx.fillText(botLabel, 0, showAlgoForBot ? -21 : -7);
+                
+                // Algo Ticker
+                if (showAlgoForBot) {
+                    ctx.save();
+                    
+                    // Clip region for the ticker (untere Hälfte der Box)
+                    ctx.beginPath();
+                    if(ctx.roundRect) ctx.roundRect(-boxW/2 + 2, boxY + 14, boxW - 4, 14, 4);
+                    else ctx.rect(-boxW/2 + 2, boxY + 14, boxW - 4, 14);
+                    ctx.clip();
+
+                    // Init Ticker Logic on Bot
+                    if (!bot.emojiQueue) {
+                        bot.emojiQueue = ['💭', '💭', '💭', '💭'];
+                        bot.lastTickerEmoji = '💭';
+                        bot.tickerAnim = 0;
+                    }
+
+                    // Bestimme aktuelles Emoji
+                    let currentEmoji = '💭'; // Fallback Leerlauf
+                    if (bot.isKicking) currentEmoji = '🦿';
+                    else if (bot.isMovingFast) currentEmoji = '⏫';
+                    else if (bot.isMovingNormal) currentEmoji = '⬆️';
+                    else if (bot.isTurning) currentEmoji = '🔄';
+                    else if (bot.isWaiting) currentEmoji = '⏳';
+                    else if (bot.magnetOn) currentEmoji = '🧲';
+
+                    // Neue Aktion pushen
+                    if (currentEmoji !== bot.lastTickerEmoji) {
+                        bot.emojiQueue.push(bot.lastTickerEmoji);
+                        if (bot.emojiQueue.length > 4) bot.emojiQueue.shift();
+                        bot.lastTickerEmoji = currentEmoji;
+                        bot.tickerAnim = 1.0;
+                    }
+
+                    // Ticker Animation tick
+                    if (bot.tickerAnim > 0) {
+                        bot.tickerAnim -= 0.1; // Geschwindigkeit des Durchlaufens
+                        if (bot.tickerAnim < 0) bot.tickerAnim = 0;
+                    }
+
+                    let anim = bot.tickerAnim;
+                    let spacing = 16;
+                    let rightEdge = 20; // x-Position des aktuellen Emojis
+                    let tickerY = boxY + 21; // y-Mitte des Tickers (unter dem Namen)
+
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+
+                    // Zeichne die Historie (scrollt nach links weg und verblasst)
+                    for (let i = 0; i < bot.emojiQueue.length; i++) {
+                        let ageIndex = bot.emojiQueue.length - i; // 1 bis 4
+                        let targetX = rightEdge - (ageIndex * spacing);
+                        let x = targetX + (anim * spacing);
+
+                        // Fade out mask für den linken Rand
+                        let alpha = Math.min(1.0, Math.max(0, (x + 36) / 20)); 
+
+                        ctx.globalAlpha = alpha;
+                        ctx.font = '10px system-ui';
+                        ctx.fillText(bot.emojiQueue[i], x, tickerY);
+                    }
+
+                    // Zeichne aktuelles Emoji (rechts, vergrößert sich beim Erscheinen)
+                    let currentX = rightEdge + (anim * spacing);
+                    ctx.globalAlpha = 1.0; 
+                    let scale = 1.0 + (1.0 - anim) * 0.4; // Skaliert von 1.0 auf 1.4
+                    
+                    ctx.translate(currentX, tickerY);
+                    ctx.scale(scale, scale);
+                    ctx.font = '10px system-ui';
+                    ctx.fillText(bot.lastTickerEmoji, 0, 0);
+
+                    ctx.restore();
+                }
                 
                 ctx.restore();
             });
@@ -4438,23 +4694,23 @@ function resetSim() {
                                     pveState.ticks = 90 * 60;
                                     showMatchOverlay(t('halfTime'), t('switchingSides'), 180);
                                 } else {
-                                    let hostWon = pveState.scorePlayer > pveState.scoreEnemy;
-                                    let guestWon = pveState.scoreEnemy > pveState.scorePlayer;
-                                    let msg = hostWon ? (playerTeamName + " " + t('wins')) : (guestWon ? (guestTeamData.teamName + " " + t('wins')) : t('draw'));
-                                    
-                                    // Emotionale Reaktion auf den Match-Ausgang!
-                                    if (hostWon) SoundEngine.playBotHappy();
-                                    else if (guestWon) SoundEngine.playBotSad();
-                                    else SoundEngine.playBotConfused();
+                                    let msg = pveState.scorePlayer > pveState.scoreEnemy ? (playerTeamName + " " + t('wins')) : (pveState.scoreEnemy > pveState.scorePlayer ? (enemyTeamName + " " + t('wins')) : t('draw'));
 
                                     showMatchOverlay(t('matchEnd'), msg, 300);
                                 }
                             }
-                            
-                            if (pveState.status !== 'OVERLAY' && pveState.status !== 'MATCH_END_OVERLAY') {
-                                updateSensorVisuals();
-                                executeScriptTick();   
-                                updatePhysics();       
+                            if (pveState.ticks <= 0) {
+                                if (pveState.half === 1) {
+                                    pveState.half = 2;
+                                    pveState.ticks = 90 * 60;
+                                    showMatchOverlay(t('halfTime'), t('switchingSides'), 180);
+                                } else {
+                                    let hostWon = pveState.scorePlayer > pveState.scoreEnemy;
+                                    let guestWon = pveState.scoreEnemy > pveState.scorePlayer;
+                                    let msg = hostWon ? (playerTeamName + " " + t('wins')) : (guestWon ? (guestTeamData.teamName + " " + t('wins')) : t('draw'));
+
+                                    showMatchOverlay(t('matchEnd'), msg, 300);
+                                }
                             }
                         }
 
@@ -4462,11 +4718,11 @@ function resetSim() {
                         if (pvpConn && pvpConn.open) {
                             let syncP = pvePlayerBots.map((b, i) => {
                                 let act = Object.keys(botContexts[i*2].activeSensors || {}).filter(k => botContexts[i*2].activeSensors[k]);
-                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn};
+                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn, tur: b.isTurning, w: b.isWaiting};
                             });
                             let syncE = pveEnemyBots.map((b, i) => {
                                 let act = Object.keys(botContexts[i*2+1].activeSensors || {}).filter(k => botContexts[i*2+1].activeSensors[k]);
-                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn};
+                                return {x: Math.round(b.x), y: Math.round(b.y), a: Number(b.angle.toFixed(2)), bat: Math.round(b.battery), kick: b.isKicking, id: b.botId, act: act, m: b.isMovingFast ? 2 : (b.isMovingNormal ? 1 : 0), mag: b.magnetOn, tur: b.isTurning, w: b.isWaiting};
                             });
 
                             pvpConn.send({
@@ -4691,10 +4947,6 @@ function resetSim() {
                         data.snd.forEach(s => {
                             if (s === 'k') SoundEngine._playKickLocal();
                             if (s === 'b') SoundEngine._playBumpLocal();
-                            if (s === 'bh') SoundEngine._playBotHappyLocal();
-                            if (s === 'bs') SoundEngine._playBotSadLocal();
-                            if (s === 'ba') SoundEngine._playBotAngryLocal();
-                            if (s === 'bc') SoundEngine._playBotConfusedLocal();
                         });
                     }
 
@@ -4729,7 +4981,8 @@ function resetSim() {
                         if(pvePlayerBots[i]) {
                             pvePlayerBots[i].x = bd.x; pvePlayerBots[i].y = bd.y; pvePlayerBots[i].angle = bd.a; 
                             pvePlayerBots[i].battery = bd.bat; pvePlayerBots[i].isKicking = bd.kick;
-                            pvePlayerBots[i].isMovingFast = (bd.m === 2); pvePlayerBots[i].isMovingNormal = (bd.m === 1); pvePlayerBots[i].magnetOn = bd.mag;
+                            pvePlayerBots[i].isMovingFast = (bd.m === 2); pvePlayerBots[i].isMovingNormal = (bd.m === 1); 
+                            pvePlayerBots[i].magnetOn = bd.mag; pvePlayerBots[i].isTurning = bd.tur; pvePlayerBots[i].isWaiting = bd.w;
                             pvePlayerBots[i].act = {};
                             if (bd.act) bd.act.forEach(a => pvePlayerBots[i].act[a] = true);
                         }
@@ -4738,7 +4991,8 @@ function resetSim() {
                         if(pveEnemyBots[i]) {
                             pveEnemyBots[i].x = bd.x; pveEnemyBots[i].y = bd.y; pveEnemyBots[i].angle = bd.a; 
                             pveEnemyBots[i].battery = bd.bat; pveEnemyBots[i].isKicking = bd.kick;
-                            pveEnemyBots[i].isMovingFast = (bd.m === 2); pveEnemyBots[i].isMovingNormal = (bd.m === 1); pveEnemyBots[i].magnetOn = bd.mag;
+                            pveEnemyBots[i].isMovingFast = (bd.m === 2); pveEnemyBots[i].isMovingNormal = (bd.m === 1); 
+                            pveEnemyBots[i].magnetOn = bd.mag; pveEnemyBots[i].isTurning = bd.tur; pveEnemyBots[i].isWaiting = bd.w;
                             pveEnemyBots[i].act = {};
                             if (bd.act) bd.act.forEach(a => pveEnemyBots[i].act[a] = true);
                         }
@@ -4805,12 +5059,12 @@ function resetSim() {
             pveEnemyBots = [];
             
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: teams[i].weight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: teams[i].name, sentSignals: [] });
                 
                 let eWeight = guestTeamData.teams[i] ? guestTeamData.teams[i].weight : 5;
                 let eName = guestTeamData.teams[i] ? guestTeamData.teams[i].name : "E-Bot";
                 
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
             }
 
             // Apply logic & sensors for guest team
@@ -4866,8 +5120,8 @@ function resetSim() {
             pveEnemyBots = [];
             
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: pvpHostName + " " + (i+1), act: {} });
-                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, name: teams[i].name, act: {} });
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, name: pvpHostName + " " + (i+1), act: {} });
+                pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, name: teams[i].name, act: {} });
             }
             
             transitionToPvPBoard();
