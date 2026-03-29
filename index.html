@@ -4653,13 +4653,6 @@
                             } else {
                                 let msg = pveState.scorePlayer > pveState.scoreEnemy ? (playerTeamName + " " + t('wins')) : (pveState.scoreEnemy > pveState.scorePlayer ? (enemyTeamName + " " + t('wins')) : t('draw'));
                                 
-                                // Emotionale Reaktion auf den Match-Ausgang!
-                                let pWon = pveState.scorePlayer > pveState.scoreEnemy;
-                                let eWon = pveState.scoreEnemy > pveState.scorePlayer;
-                                if (pWon) SoundEngine.playBotHappy();
-                                else if (eWon) SoundEngine.playBotSad();
-                                else SoundEngine.playBotConfused();
-
                                 showMatchOverlay(t('matchEnd'), msg, 300);
                             }
                         }
@@ -4694,21 +4687,10 @@
                                     pveState.ticks = 90 * 60;
                                     showMatchOverlay(t('halfTime'), t('switchingSides'), 180);
                                 } else {
-                                    let msg = pveState.scorePlayer > pveState.scoreEnemy ? (playerTeamName + " " + t('wins')) : (pveState.scoreEnemy > pveState.scorePlayer ? (enemyTeamName + " " + t('wins')) : t('draw'));
-
-                                    showMatchOverlay(t('matchEnd'), msg, 300);
-                                }
-                            }
-                            if (pveState.ticks <= 0) {
-                                if (pveState.half === 1) {
-                                    pveState.half = 2;
-                                    pveState.ticks = 90 * 60;
-                                    showMatchOverlay(t('halfTime'), t('switchingSides'), 180);
-                                } else {
                                     let hostWon = pveState.scorePlayer > pveState.scoreEnemy;
                                     let guestWon = pveState.scoreEnemy > pveState.scorePlayer;
                                     let msg = hostWon ? (playerTeamName + " " + t('wins')) : (guestWon ? (guestTeamData.teamName + " " + t('wins')) : t('draw'));
-
+                                    
                                     showMatchOverlay(t('matchEnd'), msg, 300);
                                 }
                             }
