@@ -1063,6 +1063,7 @@
         let isPvPHost = false;
         let pvpMatchInProgress = false;
         let guestTeamData = null;
+        let hostTeamData = null;
         
         let pvpHostName = "", pvpHostColor = "";
         let pvpGuestName = "", pvpGuestColor = "";
@@ -4694,6 +4695,12 @@
                                     showMatchOverlay(t('matchEnd'), msg, 300);
                                 }
                             }
+                            
+                            if (pveState.status !== 'OVERLAY' && pveState.status !== 'MATCH_END_OVERLAY') {
+                                updateSensorVisuals();
+                                executeScriptTick();   
+                                updatePhysics();       
+                            }
                         }
 
                         // Sende kompakte Sync-Daten an Gast (verhindert lag)
@@ -4863,6 +4870,7 @@
                         setHandshakeStatus(t('hsSendGuest'));
                         let hostData = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
                         
+                        hostTeamData = hostData;
                         pvpHostName = hostData.teamName;
                         pvpHostColor = hostData.teamColor;
                         pvpHostLogoObj = hostData.logo;
@@ -5102,7 +5110,8 @@
             pveEnemyBots = [];
             
             for(let i=0; i<3; i++) {
-                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, name: pvpHostName + " " + (i+1), act: {} });
+                let hName = hostTeamData?.teams[i]?.name || (pvpHostName + " " + (i+1));
+                pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, name: hName, act: {} });
                 pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, name: teams[i].name, act: {} });
             }
             
@@ -5137,7 +5146,8 @@
             document.getElementById('pvpGuestLogo').innerHTML = getLogoSVG(pvpGuestLogoObj || playerLogo);
 
             for(let i=0; i<3; i++) {
-                document.getElementById('lblH'+i).innerText = isPvPHost ? teams[i].name : pvpHostName + " " + (i+1);
+                let hName = isPvPHost ? teams[i].name : (hostTeamData?.teams[i]?.name || (pvpHostName + " " + (i+1)));
+                document.getElementById('lblH'+i).innerText = hName;
                 document.getElementById('lblG'+i).innerText = isPvPHost ? (guestTeamData?.teams[i]?.name || "E"+(i+1)) : teams[i].name;
             }
 
