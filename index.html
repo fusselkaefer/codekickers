@@ -1528,30 +1528,121 @@
         let tempLogo = {};
         function getPatternSvgDef(type, pColor, aColor, id) {
             if(type === 0) return '';
-            let svg = `<pattern id="${id}" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="scale(0.8)">`;
+            let w = (type >= 4 && type !== 6) ? 100 : 20;
+            let h = (type >= 4 && type !== 6) ? 120 : 20; // 120 height deckt auch den Bumper lückenlos ab
+            if (type === 6) { w = 34.64; h = 60; }
+            
+            let transform = 'scale(0.8)';
+            if (type === 4 || type === 5) transform = 'scale(1)';
+            else if (type === 6 || type === 7) transform = 'scale(0.5)'; // 7 ist jetzt kleiner skaliert für mehr Details
+            
+            let svg = `<pattern id="${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse" patternTransform="${transform}">`;
             if(type===1) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="10" height="20" fill="${pColor}"/>`;
             if(type===2) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="20" height="10" fill="${pColor}"/>`;
             if(type===3) svg += `<rect width="20" height="20" fill="${aColor}"/><g transform="rotate(45 10 10)"><rect x="-10" y="-10" width="40" height="10" fill="${pColor}"/><rect x="-10" y="10" width="40" height="10" fill="${pColor}"/></g>`;
-            if(type===4) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="10" height="10" fill="${pColor}"/><rect x="10" y="10" width="10" height="10" fill="${pColor}"/>`;
-            if(type===5) svg += `<rect width="20" height="20" fill="${pColor}"/><circle cx="10" cy="10" r="6" fill="${aColor}"/>`;
-            if(type===6) svg += `<rect width="20" height="20" fill="${aColor}"/><path d="M10,0 v20 M0,10 h20" stroke="${pColor}" stroke-width="4"/>`;
-            if(type===7) svg += `<rect width="20" height="20" fill="${aColor}"/><polygon points="10,0 20,10 10,20 0,10" fill="${pColor}"/>`;
+            if(type===4) {
+                // Aggressiver horizontaler Splash (oben UND unten)
+                svg += `<rect width="100" height="120" fill="${aColor}"/>
+                        <!-- Oberer Splash -->
+                        <path d="M 5,55 Q 30,45 50,48 Q 75,35 95,25 Q 75,45 85,55 Q 60,50 45,60 Q 25,70 5,65 Z" fill="${pColor}"/>
+                        <path d="M 15,60 Q 40,65 75,80 Q 55,80 30,68 Z" fill="${pColor}"/>
+                        <path d="M 12,48 Q 30,25 55,15 Q 40,35 25,45 Z" fill="${pColor}"/>
+                        <!-- Unterer Splash -->
+                        <path d="M 10,95 Q 40,85 60,90 Q 80,85 100,105 Q 85,110 65,105 Q 45,115 15,105 Z" fill="${pColor}"/>
+                        <!-- Spritzer -->
+                        <circle cx="70" cy="20" r="2" fill="${pColor}"/><circle cx="85" cy="35" r="1.5" fill="${pColor}"/>
+                        <circle cx="90" cy="45" r="2" fill="${pColor}"/><circle cx="65" cy="65" r="1.5" fill="${pColor}"/>
+                        <circle cx="85" cy="75" r="2" fill="${pColor}"/><circle cx="45" cy="30" r="2" fill="${pColor}"/>
+                        <circle cx="30" cy="20" r="1.5" fill="${pColor}"/><circle cx="50" cy="80" r="2" fill="${pColor}"/>
+                        <circle cx="15" cy="100" r="2" fill="${pColor}"/><circle cx="35" cy="110" r="1.5" fill="${pColor}"/>
+                        <circle cx="80" cy="95" r="2" fill="${pColor}"/><circle cx="95" cy="115" r="2.5" fill="${pColor}"/>`;
+            }
+            if(type===5) {
+                // Verlauf weiter unten fokussiert (Übergang startet unterhalb der Batterie)
+                let gid = 'grad' + id;
+                svg += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="${pColor}"/>
+                            <stop offset="25%" stop-color="${pColor}"/>
+                            <stop offset="55%" stop-color="${aColor}"/>
+                            <stop offset="100%" stop-color="${aColor}"/>
+                        </linearGradient>
+                        <rect width="100" height="120" fill="url(#${gid})"/>`;
+            }
+            if(type===6) {
+                svg += `<rect width="35" height="60" fill="${aColor}"/>
+                        <g fill="none" stroke="${pColor}" stroke-width="2.5">
+                            <polygon points="17.32,10 34.64,20 34.64,40 17.32,50 0,40 0,20" />
+                            <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-20" />
+                            <polygon points="34.64,-20 51.96,-10 51.96,10 34.64,20 17.32,10 17.32,-20" />
+                            <polygon points="0,40 17.32,50 17.32,70 0,80 -17.32,70 -17.32,50" />
+                            <polygon points="34.64,40 51.96,50 51.96,70 34.64,80 17.32,70 17.32,50" />
+                        </g>`;
+            }
+            if(type===7) {
+                // Neues Dazzle Camo / Shatter Lightning Muster
+                svg += `<rect width="100" height="120" fill="${aColor}"/>
+                        <path d="M -5,10 L 35,-5 L 25,40 L 55,20 L 30,80 L 65,100 L -5,130 Z" fill="${pColor}"/>
+                        <path d="M 45,-5 L 105,-5 L 105,35 L 75,25 L 90,65 L 45,45 Z" fill="${pColor}"/>
+                        <path d="M 105,50 L 70,80 L 105,105 Z" fill="${pColor}"/>
+                        <path d="M 105,130 L 55,130 L 80,100 L 40,85 L 60,55 L 95,75 Z" fill="${pColor}"/>
+                        <path d="M -5,45 L 15,65 L -5,85 Z" fill="${pColor}"/>`;
+            }
             svg += `</pattern>`;
             return svg;
         }
 
         function getPatternCSS(type, pColor, aColor) {
             if(type === 0) return `background-color: ${pColor}`;
-            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">`;
+            let w = (type >= 4 && type !== 6) ? 100 : 20;
+            let h = (type >= 4 && type !== 6) ? 120 : 20;
+            if (type === 6) { w = 34.64; h = 60; }
+            let vBox = `viewBox="0 0 ${w} ${h}"`;
+
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" ${vBox}>`;
             if(type===1) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="10" height="20" fill="${pColor}"/>`;
             if(type===2) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="20" height="10" fill="${pColor}"/>`;
             if(type===3) svg += `<rect width="20" height="20" fill="${aColor}"/><g transform="rotate(45 10 10)"><rect x="-10" y="-10" width="40" height="10" fill="${pColor}"/><rect x="-10" y="10" width="40" height="10" fill="${pColor}"/></g>`;
-            if(type===4) svg += `<rect width="20" height="20" fill="${aColor}"/><rect width="10" height="10" fill="${pColor}"/><rect x="10" y="10" width="10" height="10" fill="${pColor}"/>`;
-            if(type===5) svg += `<rect width="20" height="20" fill="${pColor}"/><circle cx="10" cy="10" r="6" fill="${aColor}"/>`;
-            if(type===6) svg += `<rect width="20" height="20" fill="${aColor}"/><path d="M10,0 v20 M0,10 h20" stroke="${pColor}" stroke-width="4"/>`;
-            if(type===7) svg += `<rect width="20" height="20" fill="${aColor}"/><polygon points="10,0 20,10 10,20 0,10" fill="${pColor}"/>`;
+            if(type===4) {
+                svg += `<rect width="100" height="120" fill="${aColor}"/>
+                        <path d="M 5,55 Q 30,45 50,48 Q 75,35 95,25 Q 75,45 85,55 Q 60,50 45,60 Q 25,70 5,65 Z" fill="${pColor}"/>
+                        <path d="M 15,60 Q 40,65 75,80 Q 55,80 30,68 Z" fill="${pColor}"/>
+                        <path d="M 12,48 Q 30,25 55,15 Q 40,35 25,45 Z" fill="${pColor}"/>
+                        <path d="M 10,95 Q 40,85 60,90 Q 80,85 100,105 Q 85,110 65,105 Q 45,115 15,105 Z" fill="${pColor}"/>
+                        <circle cx="70" cy="20" r="2" fill="${pColor}"/><circle cx="85" cy="35" r="1.5" fill="${pColor}"/>
+                        <circle cx="90" cy="45" r="2" fill="${pColor}"/><circle cx="65" cy="65" r="1.5" fill="${pColor}"/>
+                        <circle cx="85" cy="75" r="2" fill="${pColor}"/><circle cx="45" cy="30" r="2" fill="${pColor}"/>
+                        <circle cx="30" cy="20" r="1.5" fill="${pColor}"/><circle cx="50" cy="80" r="2" fill="${pColor}"/>
+                        <circle cx="15" cy="100" r="2" fill="${pColor}"/><circle cx="35" cy="110" r="1.5" fill="${pColor}"/>
+                        <circle cx="80" cy="95" r="2" fill="${pColor}"/><circle cx="95" cy="115" r="2.5" fill="${pColor}"/>`;
+            }
+            if(type===5) {
+                let gid = 'grad' + Math.floor(Math.random()*10000);
+                svg += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="${pColor}"/><stop offset="25%" stop-color="${pColor}"/><stop offset="55%" stop-color="${aColor}"/><stop offset="100%" stop-color="${aColor}"/></linearGradient></defs>
+                        <rect width="100" height="120" fill="url(#${gid})"/>`;
+            }
+            if(type===6) {
+                svg += `<rect width="35" height="60" fill="${aColor}"/>
+                        <g fill="none" stroke="${pColor}" stroke-width="2.5">
+                            <polygon points="17.32,10 34.64,20 34.64,40 17.32,50 0,40 0,20" />
+                            <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-20" />
+                            <polygon points="34.64,-20 51.96,-10 51.96,10 34.64,20 17.32,10 17.32,-20" />
+                            <polygon points="0,40 17.32,50 17.32,70 0,80 -17.32,70 -17.32,50" />
+                            <polygon points="34.64,40 51.96,50 51.96,70 34.64,80 17.32,70 17.32,50" />
+                        </g>`;
+            }
+            if(type===7) {
+                svg += `<rect width="100" height="120" fill="${aColor}"/>
+                        <path d="M -5,10 L 35,-5 L 25,40 L 55,20 L 30,80 L 65,100 L -5,130 Z" fill="${pColor}"/>
+                        <path d="M 45,-5 L 105,-5 L 105,35 L 75,25 L 90,65 L 45,45 Z" fill="${pColor}"/>
+                        <path d="M 105,50 L 70,80 L 105,105 Z" fill="${pColor}"/>
+                        <path d="M 105,130 L 55,130 L 80,100 L 40,85 L 60,55 L 95,75 Z" fill="${pColor}"/>
+                        <path d="M -5,45 L 15,65 L -5,85 Z" fill="${pColor}"/>`;
+            }
             svg += `</svg>`;
-            return `background-image: url("data:image/svg+xml,${encodeURIComponent(svg)}"); background-size: 20px 20px;`;
+            
+            // Preview CSS Background Anpassung für Kacheln
+            let bgStyle = (type >= 1 && type <= 3) ? 'background-size: 20px 20px;' : (type === 6 ? 'background-size: 17.32px 30px;' : (type === 7 ? 'background-size: 50px 60px;' : 'background-size: 100% 100%;'));
+            return `background-image: url("data:image/svg+xml,${encodeURIComponent(svg)}"); ${bgStyle}`;
         }
 
         const patternCanvases = {};
@@ -1560,18 +1651,56 @@
             let ctxId = ctx.canvas ? ctx.canvas.id : 'global';
             let key = ctxId + "_" + type + "_" + pColor + "_" + aColor;
             if (patternCanvases[key]) return patternCanvases[key];
+            
+            let w = (type >= 4 && type !== 6) ? 100 : 20;
+            let h = (type >= 4 && type !== 6) ? 120 : 20;
+            if (type === 6) { w = 34.64; h = 60; }
+
             let c = document.createElement('canvas');
-            c.width = 20; c.height = 20;
+            c.width = w; c.height = h;
             let x = c.getContext('2d');
+            
             if(type===1) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.fillStyle=pColor; x.fillRect(0,0,10,20); }
             else if(type===2) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.fillStyle=pColor; x.fillRect(0,0,20,10); }
             else if(type===3) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.fillStyle=pColor; x.translate(10,10); x.rotate(Math.PI/4); x.translate(-10,-10); x.fillRect(-10, -10, 40, 10); x.fillRect(-10, 10, 40, 10); }
-            else if(type===4) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.fillStyle=pColor; x.fillRect(0,0,10,10); x.fillRect(10,10,10,10); }
-            else if(type===5) { x.fillStyle=pColor; x.fillRect(0,0,20,20); x.fillStyle=aColor; x.beginPath(); x.arc(10,10,6,0,Math.PI*2); x.fill(); }
-            else if(type===6) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.strokeStyle=pColor; x.lineWidth=4; x.beginPath(); x.moveTo(10,0); x.lineTo(10,20); x.moveTo(0,10); x.lineTo(20,10); x.stroke(); }
-            else if(type===7) { x.fillStyle=aColor; x.fillRect(0,0,20,20); x.fillStyle=pColor; x.beginPath(); x.moveTo(10,0); x.lineTo(20,10); x.lineTo(10,20); x.lineTo(0,10); x.closePath(); x.fill(); }
+            else if(type===4) {
+                x.fillStyle=aColor; x.fillRect(0,0,100,120); x.fillStyle=pColor;
+                x.fill(new Path2D("M 5,55 Q 30,45 50,48 Q 75,35 95,25 Q 75,45 85,55 Q 60,50 45,60 Q 25,70 5,65 Z"));
+                x.fill(new Path2D("M 15,60 Q 40,65 75,80 Q 55,80 30,68 Z"));
+                x.fill(new Path2D("M 12,48 Q 30,25 55,15 Q 40,35 25,45 Z"));
+                x.fill(new Path2D("M 10,95 Q 40,85 60,90 Q 80,85 100,105 Q 85,110 65,105 Q 45,115 15,105 Z"));
+                [[70,20,2],[85,35,1.5],[90,45,2],[65,65,1.5],[85,75,2],[45,30,2],[30,20,1.5],[50,80,2],[15,100,2],[35,110,1.5],[80,95,2],[95,115,2.5]].forEach(d => { x.beginPath(); x.arc(d[0], d[1], d[2], 0, Math.PI*2); x.fill(); });
+            }
+            else if(type===5) {
+                let grd = x.createLinearGradient(0,0,0,120);
+                grd.addColorStop(0, pColor); grd.addColorStop(0.25, pColor); grd.addColorStop(0.55, aColor); grd.addColorStop(1, aColor);
+                x.fillStyle = grd; x.fillRect(0,0,100,120);
+            }
+            else if(type===6) {
+                x.fillStyle=aColor; x.fillRect(0,0,35,60); x.strokeStyle=pColor; x.lineWidth=2.5;
+                ["M17.32,10 L34.64,20 L34.64,40 L17.32,50 L0,40 L0,20 Z",
+                 "M0,-20 L17.32,-10 L17.32,10 L0,20 L-17.32,10 L-17.32,-20 Z",
+                 "M34.64,-20 L51.96,-10 L51.96,10 L34.64,20 L17.32,10 L17.32,-20 Z",
+                 "M0,40 L17.32,50 L17.32,70 L0,80 L-17.32,70 L-17.32,50 Z",
+                 "M34.64,40 L51.96,50 L51.96,70 L34.64,80 L17.32,70 L17.32,50 Z"
+                ].forEach(p => { x.stroke(new Path2D(p)); });
+            }
+            else if(type===7) {
+                x.fillStyle=aColor; x.fillRect(0,0,100,120); x.fillStyle=pColor;
+                x.fill(new Path2D("M -5,10 L 35,-5 L 25,40 L 55,20 L 30,80 L 65,100 L -5,130 Z"));
+                x.fill(new Path2D("M 45,-5 L 105,-5 L 105,35 L 75,25 L 90,65 L 45,45 Z"));
+                x.fill(new Path2D("M 105,50 L 70,80 L 105,105 Z"));
+                x.fill(new Path2D("M 105,130 L 55,130 L 80,100 L 40,85 L 60,55 L 95,75 Z"));
+                x.fill(new Path2D("M -5,45 L 15,65 L -5,85 Z"));
+            }
+
             let pat = ctx.createPattern(c, 'repeat');
-            let domMatrix = new DOMMatrix(); domMatrix.scaleSelf(0.8, 0.8); pat.setTransform(domMatrix);
+            let domMatrix = new DOMMatrix(); 
+            if (type === 4 || type === 5) domMatrix.scaleSelf(1, 1);
+            else if (type === 6 || type === 7) domMatrix.scaleSelf(0.5, 0.5); // Verkleinert das Dazzle Camo für den "Kleinteilig"-Effekt
+            else domMatrix.scaleSelf(0.8, 0.8);
+            
+            pat.setTransform(domMatrix);
             patternCanvases[key] = pat;
             return pat;
         }
@@ -2214,7 +2343,22 @@
                 // Load League State
                 let reqLeague = tx.objectStore('setup').get('leagueData');
                 reqLeague.onsuccess = function() {
-                    if (reqLeague.result) leagueState = reqLeague.result;
+                    if (reqLeague.result) {
+                        leagueState = reqLeague.result;
+                        // --- PATCH FÜR ALTE SPEICHERSTÄNDE ---
+                        // Wenn die Liga vor dem Pattern-Update gestartet wurde, fehlen den KI-Teams die Muster.
+                        if (leagueState && leagueState.teams) {
+                            leagueState.teams.forEach(t => {
+                                if (t.id !== 0) {
+                                    let template = LEAGUE_AI_TEAMS_CONFIG.find(ai => ai.id === t.id);
+                                    if (template) {
+                                        if (t.pattern === undefined) t.pattern = template.pattern;
+                                        if (t.altColor === undefined) t.altColor = template.altColor;
+                                    }
+                                }
+                            });
+                        }
+                    }
                     isLoadingData = false;
                     initApp();
                 }
@@ -2447,7 +2591,7 @@
             let fallback = availableHexes.find(h => h !== playerTeamColor) || '#ef4444';
             enemyColor = (playerTeamColor !== '#ef4444') ? '#ef4444' : '#3b82f6';
             enemyAltColor = '#ffffff';
-            enemyPattern = 0;
+            enemyPattern = 0; // Labor-Gegner bekommt kein Muster!
             enemyTeamName = "AI Bot";
             enemyLogo = { shape: 'circle', icon: 'AI', bgColor: enemyColor, fgColor: '#ffffff' };
         }
@@ -3282,6 +3426,8 @@
 
         function resetSim() {
             matchPlayerColor = playerTeamColor; // Sorge dafür, dass im Lab die normale Farbe genutzt wird
+            updateEnemyColor(); // Sorge dafür, dass der Labor-Dummy resettet wird (falls man aus der Liga kommt)
+            
             testRobot.botId = currentRobotId;
             testRobot.weight = teams[currentRobotId].weight;
             testRobot.name = teams[currentRobotId].name;
@@ -3368,9 +3514,16 @@
                 }
             }
             
+            // --- PATTERN FIX FÜR ALTE SPEICHERSTÄNDE WÄHREND DER LAUFZEIT ---
+            let aiTemplate = LEAGUE_AI_TEAMS_CONFIG.find(ai => ai.id === currentPvEEnemyTeam.id);
+            if (aiTemplate) {
+                if (currentPvEEnemyTeam.pattern === undefined) currentPvEEnemyTeam.pattern = aiTemplate.pattern;
+                if (currentPvEEnemyTeam.altColor === undefined) currentPvEEnemyTeam.altColor = aiTemplate.altColor;
+            }
+            
             enemyColor = currentPvEEnemyTeam.color;
             enemyAltColor = currentPvEEnemyTeam.altColor || '#ffffff';
-            enemyPattern = currentPvEEnemyTeam.pattern || 0;
+            enemyPattern = isLeagueMatch ? (currentPvEEnemyTeam.pattern || 0) : 0; // Muster nur im Liga-Modus aktivieren!
             enemyTeamName = currentPvEEnemyTeam.name;
             enemyLogo = currentPvEEnemyTeam.logo;
 
