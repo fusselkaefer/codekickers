@@ -1438,7 +1438,9 @@
                 btn.classList.replace('border-red-700', 'border-green-700');
                 
                 if (isLeagueMatch) {
-                    processLeagueMatch(pveState.scorePlayer, pveState.scoreEnemy);
+                    if (pveState.half === 2 && pveState.ticks <= 0) {
+                        processLeagueMatch(pveState.scorePlayer, pveState.scoreEnemy);
+                    }
                     setMode('LEAGUE');
                 }
             } else if (currentMode === 'PVP') {
@@ -3129,7 +3131,9 @@
                 drawSim();
 
                 if (isLeagueMatch) {
-                    processLeagueMatch(pveState.scorePlayer, pveState.scoreEnemy);
+                    if (pveState.half === 2 && pveState.ticks <= 0) {
+                        processLeagueMatch(pveState.scorePlayer, pveState.scoreEnemy);
+                    }
                     setMode('LEAGUE');
                 }
             }
@@ -3210,7 +3214,8 @@
                     currentPvEEnemyTeam = leagueState.teams.find(t => t.id === enemyId);
                 } else {
                     // Pick a random League AI Team for Quick Match
-                    let availableTeams = LEAGUE_AI_TEAMS_CONFIG;
+                    // Beschränke Schnellspiel auf leichtere Gegner (Tier 1 und 2)
+                    let availableTeams = LEAGUE_AI_TEAMS_CONFIG.filter(ai => ai.tier <= 2);
                     let randomIndex = Math.floor(Math.random() * availableTeams.length);
                     let aiConfig = availableTeams[randomIndex];
                     currentPvEEnemyTeam = {
