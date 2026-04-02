@@ -1557,7 +1557,8 @@
         const patternCanvases = {};
         function getCanvasPattern(ctx, type, pColor, aColor) {
             if (type === 0) return pColor;
-            let key = type + pColor + aColor;
+            let ctxId = ctx.canvas ? ctx.canvas.id : 'global';
+            let key = ctxId + "_" + type + "_" + pColor + "_" + aColor;
             if (patternCanvases[key]) return patternCanvases[key];
             let c = document.createElement('canvas');
             c.width = 20; c.height = 20;
@@ -1660,13 +1661,13 @@
 
         // Liga-Teams Konfiguration (Dient als Vorlage für dynamische Generierung)
         const LEAGUE_AI_TEAMS_CONFIG = [
-            { id: 1, name: "Crimson Cobras", color: "#ef4444", logo: { shape: 'shield', icon: '🐍', bgColor: '#ef4444', fgColor: '#ffffff' }, tier: 1, names: ["Viper", "Python", "Mamba"] },
-            { id: 2, name: "Neon Knights", color: "#06b6d4", logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#111111' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
-            { id: 3, name: "Toxic Titans", color: "#22c55e", logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
-            { id: 4, name: "Golden Gears", color: "#eab308", logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#111111' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
-            { id: 5, name: "Midnight Mechas", color: "#64748b", logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff' }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
-            { id: 6, name: "Plasma Phantoms", color: "#ec4899", logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff' }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
-            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff' }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
+            { id: 1, name: "Crimson Cobras", color: "#ef4444", altColor: "#ffffff", pattern: 6, logo: { shape: 'shield', icon: '🐍', bgColor: '#ef4444', fgColor: '#ffffff' }, tier: 1, names: ["Viper", "Python", "Mamba"] },
+            { id: 2, name: "Neon Knights", color: "#06b6d4", altColor: "#111111", pattern: 4, logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#111111' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
+            { id: 3, name: "Toxic Titans", color: "#22c55e", altColor: "#166534", pattern: 7, logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
+            { id: 4, name: "Golden Gears", color: "#eab308", altColor: "#000000", pattern: 2, logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#111111' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
+            { id: 5, name: "Midnight Mechas", color: "#64748b", altColor: "#ffffff", pattern: 1, logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff' }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
+            { id: 6, name: "Plasma Phantoms", color: "#ec4899", altColor: "#ffffff", pattern: 3, logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff' }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
+            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", altColor: "#ffffff", pattern: 5, logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff' }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
         ];
 
         function generateRandomTeamBots(tier, names) {
@@ -2603,6 +2604,7 @@
             if ((currentMode === 'PVE' || currentMode === 'LEAGUE') && currentPvEEnemyTeam) {
                 if (currentPvEEnemyTeam.color === playerTeamColor) {
                     matchPlayerColor = playerAltColor;
+                    matchPlayerAltColor = playerTeamColor; // Farben tauschen, damit Muster sichtbar bleibt!
                 }
             }
             
@@ -3367,14 +3369,18 @@
             }
             
             enemyColor = currentPvEEnemyTeam.color;
+            enemyAltColor = currentPvEEnemyTeam.altColor || '#ffffff';
+            enemyPattern = currentPvEEnemyTeam.pattern || 0;
             enemyTeamName = currentPvEEnemyTeam.name;
             enemyLogo = currentPvEEnemyTeam.logo;
 
             // --- KOLLISIONSLOGIK FÜR FARBEN ---
             if (enemyColor === playerTeamColor) {
                 matchPlayerColor = playerAltColor;
+                matchPlayerAltColor = playerTeamColor; // Farben tauschen, damit Muster sichtbar bleibt!
             } else {
                 matchPlayerColor = playerTeamColor;
+                matchPlayerAltColor = playerAltColor;
             }
 
             updateTeamUI(); // update top bar labels
@@ -5053,14 +5059,17 @@ pvpConn.send({
                         
                         // --- KOLLISIONSLOGIK FÜR FARBEN (GAST PASST SICH AN) ---
                         let resolvedGuestColor = playerTeamColor;
+                        let resolvedGuestAltColor = playerAltColor;
                         let resolvedGuestLogo = JSON.parse(JSON.stringify(playerLogo));
                         
                         if (pvpHostColor === playerTeamColor) {
                             resolvedGuestColor = playerAltColor;
+                            resolvedGuestAltColor = playerTeamColor; // Farben tauschen
                             resolvedGuestLogo.bgColor = playerAltColor;
                         }
                         
                         pvpGuestColor = resolvedGuestColor;
+                        pvpGuestAltColor = resolvedGuestAltColor;
                         pvpGuestLogoObj = resolvedGuestLogo;
                         
                         document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
@@ -5070,7 +5079,7 @@ pvpConn.send({
                         let exportData = {
                             teamName: playerTeamName,
                             teamColor: resolvedGuestColor,
-                            altColor: playerAltColor,
+                            altColor: resolvedGuestAltColor,
                             pattern: playerPattern,
                             logo: resolvedGuestLogo,
                             teams: teams.map(t => ({ id: t.id, weight: t.weight, name: t.name, workspaceJSON: t.workspaceJSON })),
