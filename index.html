@@ -4362,10 +4362,20 @@
             rect(35, 60, 30, 20 + kickOffset, darker);
             
             ctx.beginPath(); ctx.arc(50, 60, 40, Math.PI, 0); ctx.closePath();
-            ctx.fillStyle = fillStyle;
+            
+            // PERFORMANCE FIX: HTML5 Canvas + Pattern + ShadowBlur = Extremes Lag
+            // 1. Wir zeichnen zuerst eine solide Basis (bodyColor) MIT Schatten...
+            ctx.fillStyle = bodyColor;
             ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 4;
             ctx.fill();
+            
+            // 2. ... danach schalten wir den Schatten ab und legen das Muster darüber (ohne FPS-Einbruch)
             ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+            if (botPattern !== 0) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            
             ctx.stroke();
             
             let dGloss = ctx.createRadialGradient(50, 45, 5, 50, 60, 40);
