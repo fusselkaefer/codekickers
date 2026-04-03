@@ -1099,7 +1099,7 @@
                 weightTooltip: "Weight: ", noPresets: "No presets saved yet.", loadBtn: "Load", deleteBtn: "Delete",
                 promptPreset: "Enter a name for this code preset:", presetSaved: "Code saved successfully as a preset!",
                 invalidFile: "Invalid file format!", environment: "Environment",
-                lockedRank: "Rank", unlockedPatternMsg: "🎉 League Rank {rank} reached! You unlocked {count} new robot pattern(s)!",
+                lockedRank: "Rank", unlockedPatternMsg: "🎉 League Rank {rank} reached! You unlocked {count} new robot pattern(s)!", leagueWinStarMsg: "🏆 Sensational! You won the league!\nYour team earns a championship star on the logo!",
                 colorBlue: "Blue", colorRed: "Red", colorGreen: "Green", colorPurple: "Purple", colorYellow: "Yellow",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "White", colorGray: "Gray",
                 btnAlgo: "Show Algorithm", actWait: "Wait", actKick: "Kick", actSprint: "Sprint", actMove: "Move", actTurn: "Turn",
@@ -1219,7 +1219,7 @@
                 weightTooltip: "Gewicht: ", noPresets: "Noch keine Vorlagen gespeichert.", loadBtn: "Laden", deleteBtn: "Löschen",
                 promptPreset: "Gib einen Namen für diesen Code-Preset ein:", presetSaved: "Code erfolgreich als Vorlage gesichert!",
                 invalidFile: "Ungültige Datei!", environment: "Umgebung",
-                lockedRank: "Platz", unlockedPatternMsg: "🎉 Liga-Platz {rank} erreicht! Du hast {count} neues Roboter-Muster freigeschaltet!",
+                lockedRank: "Platz", unlockedPatternMsg: "🎉 Liga-Platz {rank} erreicht! Du hast {count} neues Roboter-Muster freigeschaltet!", leagueWinStarMsg: "🏆 Sensationell! Du hast die Liga gewonnen!\nDein Team erhält einen Meisterschafts-Stern auf dem Logo!",
                 colorBlue: "Blau", colorRed: "Rot", colorGreen: "Grün", colorPurple: "Lila", colorYellow: "Gelb",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "Weiß", colorGray: "Grau",
                 btnAlgo: "Zeige Algorithmus", actWait: "Warten", actKick: "Kick", actSprint: "Sprint", actMove: "Fahren", actTurn: "Drehen",
@@ -1509,18 +1509,19 @@
 
         let playerPattern = 0;
         let bestLeagueRank = 8;
+        let leagueWins = 0; // Speichert ab sofort die Siege (Sterne)
         let playerTeamColor = '#3b82f6';
         let playerAltColor = '#ffffff'; 
         let matchPlayerColor = '#3b82f6'; 
         let matchPlayerAltColor = '#ffffff';
         let playerTeamName = "CodeKickers";
-        let playerLogo = { shape: 'shield', icon: 'CK', bgColor: '#3b82f6', fgColor: '#ffffff' };
+        let playerLogo = { shape: 'shield', icon: 'CK', bgColor: '#3b82f6', fgColor: '#ffffff', stars: 0 };
         
         let enemyPattern = 0;
         let enemyColor = '#ef4444';
         let enemyAltColor = '#ffffff';
         let enemyTeamName = "AI Bot";
-        let enemyLogo = { shape: 'circle', icon: 'AI', bgColor: '#ef4444', fgColor: '#ffffff' };
+        let enemyLogo = { shape: 'circle', icon: 'AI', bgColor: '#ef4444', fgColor: '#ffffff', stars: 0 };
 
         let tempSelectedColor = '';
         let tempAltColor = '';
@@ -1794,9 +1795,9 @@
             { id: 2, name: "Neon Knights", color: "#06b6d4", altColor: "#111111", pattern: 4, logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#111111' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
             { id: 3, name: "Toxic Titans", color: "#22c55e", altColor: "#166534", pattern: 7, logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
             { id: 4, name: "Golden Gears", color: "#eab308", altColor: "#000000", pattern: 2, logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#111111' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
-            { id: 5, name: "Midnight Mechas", color: "#64748b", altColor: "#ffffff", pattern: 1, logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff' }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
-            { id: 6, name: "Plasma Phantoms", color: "#ec4899", altColor: "#ffffff", pattern: 3, logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff' }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
-            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", altColor: "#ffffff", pattern: 5, logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff' }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
+            { id: 5, name: "Midnight Mechas", color: "#64748b", altColor: "#ffffff", pattern: 1, logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff', stars: 1 }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
+            { id: 6, name: "Plasma Phantoms", color: "#ec4899", altColor: "#ffffff", pattern: 3, logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff', stars: 2 }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
+            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", altColor: "#ffffff", pattern: 5, logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff', stars: 3 }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
         ];
 
         function generateRandomTeamBots(tier, names) {
@@ -2044,25 +2045,40 @@
                                 <span class="text-lg font-bold text-white">${t('finalRank')} ${playerRank}</span>
                             </div>`;
                             
-                if (playerRank < bestLeagueRank) {
-                    let oldRank = bestLeagueRank;
-                    bestLeagueRank = playerRank;
-                    autoSave();
+// --- SAISON ENDE AUSWERTUNG (Sterne und Freischaltungen) ---
+                if (!leagueState.seasonProcessed) {
+                    leagueState.seasonProcessed = true;
+                    let alertMsg = "";
                     
-                    let unlockedCount = 0;
-                    for (let i = 1; i <= 7; i++) {
-                        let reqRank = 8 - i;
-                        if (oldRank > reqRank && bestLeagueRank <= reqRank) {
-                            unlockedCount++;
+                    // 1. Check auf Muster-Freischaltungen
+                    if (playerRank < bestLeagueRank) {
+                        let oldRank = bestLeagueRank;
+                        bestLeagueRank = playerRank;
+                        
+                        let unlockedCount = 0;
+                        for (let i = 1; i <= 7; i++) {
+                            let reqRank = 8 - i;
+                            if (oldRank > reqRank && bestLeagueRank <= reqRank) {
+                                unlockedCount++;
+                            }
+                        }
+                        if (unlockedCount > 0) {
+                            alertMsg += t('unlockedPatternMsg').replace('{rank}', playerRank).replace('{count}', unlockedCount) + "\n\n";
                         }
                     }
                     
-                    if (unlockedCount > 0) {
-                        setTimeout(() => {
-                            let msg = t('unlockedPatternMsg').replace('{rank}', playerRank).replace('{count}', unlockedCount);
-                            customAlert(msg);
-                        }, 500);
+                    // 2. Check auf Meisterschaft & Sterne
+                    if (playerRank === 1 && leagueWins < 3) {
+                        leagueWins++;
+                        playerLogo.stars = leagueWins;
+                        updateTeamUI(); // Logo im Header sofort updaten!
+                        alertMsg += t('leagueWinStarMsg');
                     }
+                    
+                    if (alertMsg !== "") {
+                        setTimeout(() => customAlert(alertMsg.trim()), 500);
+                    }
+                    autoSave();
                 }
                 
                 // Show last matchday resultss
@@ -2354,6 +2370,7 @@
                                     if (template) {
                                         if (t.pattern === undefined) t.pattern = template.pattern;
                                         if (t.altColor === undefined) t.altColor = template.altColor;
+                                        if (t.logo && t.logo.stars === undefined) t.logo.stars = template.logo.stars || 0; // Holt die Easter-Egg Sterne!
                                     }
                                 }
                             });
@@ -2384,6 +2401,7 @@
                 altColor: playerAltColor,
                 pattern: playerPattern,
                 bestLeagueRank: bestLeagueRank,
+                leagueWins: leagueWins,
                 logo: playerLogo,
                 teams: teams.map(t => ({ id: t.id, weight: t.weight, name: t.name, workspaceJSON: t.workspaceJSON })),
                 sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal}))
@@ -2402,6 +2420,7 @@
                 altColor: playerAltColor,
                 pattern: playerPattern,
                 bestLeagueRank: bestLeagueRank,
+                leagueWins: leagueWins,
                 logo: playerLogo,
                 teams: teams.map(t => ({ id: t.id, weight: t.weight, name: t.name, workspaceJSON: t.workspaceJSON })),
                 sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal}))
@@ -2448,14 +2467,16 @@
             if(data.altColor) playerAltColor = data.altColor;
             if(data.pattern !== undefined) playerPattern = data.pattern;
             if(data.bestLeagueRank !== undefined) bestLeagueRank = data.bestLeagueRank;
+            if(data.leagueWins !== undefined) leagueWins = data.leagueWins; else leagueWins = 0;
             
             matchPlayerColor = playerTeamColor; 
             matchPlayerAltColor = playerAltColor;
             
             if(data.logo) {
                 playerLogo = data.logo;
+                playerLogo.stars = leagueWins;
             } else {
-                playerLogo = { shape: 'shield', icon: playerTeamName.substring(0,3).toUpperCase(), bgColor: playerTeamColor, fgColor: '#ffffff' };
+                playerLogo = { shape: 'shield', icon: playerTeamName.substring(0,3).toUpperCase(), bgColor: playerTeamColor, fgColor: '#ffffff', stars: leagueWins };
             }
             
             updateEnemyColor();
@@ -2583,7 +2604,25 @@
             
             let textSvg = `<text x="50" y="${textY}" font-family="'Fredoka', sans-serif" font-size="${fontSize}" font-weight="bold" fill="${logo.fgColor}" text-anchor="middle" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">${iconText}</text>`;
             
-            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:${size}; height:${size};" class="drop-shadow-md">${shapeSvg}${textSvg}</svg>`;
+            let starsSvg = '';
+            let starsCount = logo.stars || 0;
+            let mainTransform = '';
+            if (starsCount > 0) {
+                // Das Logo wird etwas kleiner, um den deutlich größeren Sternen oben Platz zu machen
+                mainTransform = 'transform="translate(10, 18) scale(0.8)"';
+                let starD = "M 0 -10 L 2.2 -3.1 L 9.5 -3.1 L 3.6 1.2 L 5.9 8.1 L 0 3.8 L -5.9 8.1 L -3.6 1.2 L -9.5 -3.1 L -2.2 -3.1 Z";
+                let sFill = "#fde047";
+                let sStrk = "#111";
+                // Sterne massiv vergrößert (scale 1.4 statt 0.9) und Rahmenstärke angepasst
+                let drawStar = (x, y) => `<g transform="translate(${x}, ${y}) scale(1.4)"><path d="${starD}" fill="${sFill}" stroke="${sStrk}" stroke-width="1.5" stroke-linejoin="round"/></g>`;
+                
+                // Dynamische, aufgefächerte Anordnung der Sterne
+                if (starsCount === 1) starsSvg = drawStar(50, 14);
+                else if (starsCount === 2) starsSvg = drawStar(35, 14) + drawStar(65, 14);
+                else if (starsCount >= 3) starsSvg = drawStar(22, 20) + drawStar(50, 10) + drawStar(78, 20);
+            }
+            
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:${size}; height:${size};" class="drop-shadow-md"><g ${mainTransform}>${shapeSvg}${textSvg}</g>${starsSvg}</svg>`;
         }
 
         function updateEnemyColor() {
@@ -3519,6 +3558,7 @@
             if (aiTemplate) {
                 if (currentPvEEnemyTeam.pattern === undefined) currentPvEEnemyTeam.pattern = aiTemplate.pattern;
                 if (currentPvEEnemyTeam.altColor === undefined) currentPvEEnemyTeam.altColor = aiTemplate.altColor;
+                if (currentPvEEnemyTeam.logo && currentPvEEnemyTeam.logo.stars === undefined) currentPvEEnemyTeam.logo.stars = aiTemplate.logo.stars || 0; // Sterne Live patchen!
             }
             
             enemyColor = currentPvEEnemyTeam.color;
