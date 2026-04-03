@@ -1528,6 +1528,7 @@
         let tempPattern = 0;
         let tempLogo = {};
         function getPatternSvgDef(type, pColor, aColor, id) {
+            type = parseInt(type, 10) || 0;
             if(type === 0) return '';
             let w = (type >= 4 && type !== 6) ? 100 : 20;
             let h = (type >= 4 && type !== 6) ? 120 : 20; // 120 height deckt auch den Bumper lückenlos ab
@@ -1593,6 +1594,7 @@
         }
 
         function getPatternCSS(type, pColor, aColor) {
+            type = parseInt(type, 10) || 0;
             if(type === 0) return `background-color: ${pColor}`;
             let w = (type >= 4 && type !== 6) ? 100 : 20;
             let h = (type >= 4 && type !== 6) ? 120 : 20;
@@ -1648,6 +1650,7 @@
 
         const patternCanvases = {};
         function getCanvasPattern(ctx, type, pColor, aColor) {
+            type = parseInt(type, 10) || 0;
             if (type === 0) return pColor;
             let ctxId = ctx.canvas ? ctx.canvas.id : 'global';
             let key = ctxId + "_" + type + "_" + pColor + "_" + aColor;
@@ -2465,7 +2468,7 @@
             if(data.teamName) playerTeamName = data.teamName;
             if(data.teamColor) playerTeamColor = data.teamColor;
             if(data.altColor) playerAltColor = data.altColor;
-            if(data.pattern !== undefined) playerPattern = data.pattern;
+            if(data.pattern !== undefined) playerPattern = parseInt(data.pattern, 10) || 0;
             if(data.bestLeagueRank !== undefined) bestLeagueRank = data.bestLeagueRank;
             if(data.leagueWins !== undefined) leagueWins = data.leagueWins; else leagueWins = 0;
             
@@ -3210,7 +3213,7 @@
             
             let bodyColor = playerTeamColor;
             let bodyAltColor = playerAltColor;
-            let patternType = playerPattern;
+            let patternType = parseInt(playerPattern, 10) || 0;
 
             let patternDef = getPatternSvgDef(patternType, bodyColor, bodyAltColor, 'roboPattern');
             let fillStyle = patternType === 0 ? bodyColor : 'url(#roboPattern)';
@@ -4526,6 +4529,7 @@
                 botAltColor = isP1 ? matchPlayerAltColor : (isEnemy ? enemyAltColor : matchPlayerAltColor);
             }
             
+            botPattern = parseInt(botPattern, 10) || 0;
             let fillStyle = getCanvasPattern(ctx, botPattern, bodyColor, botAltColor);
             
             const dark = '#374151';
@@ -4971,7 +4975,11 @@
 
         function simLoop(timestamp) {
             if(!simRunning) return;
-            SoundEngine.frameTriggers = [];
+            
+            // Im PvP Host Modus sammeln wir Sounds, bis sie über das Netzwerk gesendet wurden.
+            if (!(currentMode === 'PVP' && isPvPHost)) {
+                SoundEngine.frameTriggers = [];
+            }
 
             if (!lastFrameTime) lastFrameTime = timestamp;
             const frameTime = 1000 / 60; // 60 FPS Target
@@ -5072,8 +5080,9 @@
                             }
                         }
 
-                        // Sende kompakte Sync-Daten an Gast (verhindert lag)
-                        if (pvpConn && pvpConn.open) {
+                        // Sende kompakte Sync-Daten an Gast (verhindert lag durch Netzwerklatenz)
+                        pveState.syncTicks = (pveState.syncTicks || 0) + 1;
+                        if (pvpConn && pvpConn.open && pveState.syncTicks % 2 === 0) {
                             let syncP = pvePlayerBots.map((b, i) => {
                                 let act = Object.keys(botContexts[i*2].activeSensors || {}).filter(k => botContexts[i*2].activeSensors[k]);
                                 let moveState = b.isMovingFast ? (b.isMovingBwd ? -2 : 2) : (b.isMovingNormal ? (b.isMovingBwd ? -1 : 1) : 0);
@@ -5096,7 +5105,38 @@
                                 ct: pveState.cornerTicks,
                                 snd: SoundEngine.frameTriggers
                             });
+                            SoundEngine.frameTriggers = []; // Nach dem Senden leeren
                         }
+                    } else {
+                        // Gast: Interpolation (Lerp) für flüssige Bewegungen
+                        const lerp = (start, end, factor) => start + (end - start) * factor;
+                        const lerpAngle = (start, end, factor) => {
+                            let diff = end - start;
+                            while (diff < -Math.PI) diff += Math.PI * 2;
+                            while (diff > Math.PI) diff -= Math.PI * 2;
+                            return start + diff * factor;
+                        };
+
+                        if (pveBall.targetX !== undefined) {
+                            pveBall.x = lerp(pveBall.x, pveBall.targetX, 0.4);
+                            pveBall.y = lerp(pveBall.y, pveBall.targetY, 0.4);
+                        }
+                        
+                        pvePlayerBots.forEach(b => {
+                            if (b.targetX !== undefined) {
+                                b.x = lerp(b.x, b.targetX, 0.4);
+                                b.y = lerp(b.y, b.targetY, 0.4);
+                                b.angle = lerpAngle(b.angle, b.targetAngle, 0.4);
+                            }
+                        });
+                        
+                        pveEnemyBots.forEach(b => {
+                            if (b.targetX !== undefined) {
+                                b.x = lerp(b.x, b.targetX, 0.4);
+                                b.y = lerp(b.y, b.targetY, 0.4);
+                                b.angle = lerpAngle(b.angle, b.targetAngle, 0.4);
+                            }
+                        });
                     }
                 }
 
@@ -5193,6 +5233,8 @@
                 if (isPvPHost) {
                     pvpHostName = playerTeamName;
                     pvpHostColor = playerTeamColor;
+                    pvpHostAltColor = playerAltColor;
+                    pvpHostPattern = parseInt(playerPattern, 10) || 0;
                     pvpHostLogoObj = JSON.parse(JSON.stringify(playerLogo));
                     
                     document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
@@ -5206,7 +5248,7 @@
                     }
 
                     setHandshakeStatus(t('hsSendHost'));
-pvpConn.send({ 
+                    pvpConn.send({ 
                         type: 'HOST_READY', 
                         payload: JSON.stringify({ 
                             teamName: playerTeamName, 
@@ -5220,6 +5262,8 @@ pvpConn.send({
                 } else {
                     pvpGuestName = playerTeamName;
                     pvpGuestColor = playerTeamColor;
+                    pvpGuestAltColor = playerAltColor;
+                    pvpGuestPattern = parseInt(playerPattern, 10) || 0;
                     pvpGuestLogoObj = JSON.parse(JSON.stringify(playerLogo));
                     
                     document.getElementById('pvpLobbyGuestName').innerText = pvpGuestName;
@@ -5247,7 +5291,7 @@ pvpConn.send({
                         pvpHostName = hostData.teamName;
                         pvpHostColor = hostData.teamColor;
                         pvpHostAltColor = hostData.altColor || '#ffffff';
-                        pvpHostPattern = hostData.pattern || 0;
+                        pvpHostPattern = parseInt(hostData.pattern, 10) || 0;
                         pvpHostLogoObj = hostData.logo;
                         
                         // --- KOLLISIONSLOGIK FÜR FARBEN (GAST PASST SICH AN) ---
@@ -5263,6 +5307,7 @@ pvpConn.send({
                         
                         pvpGuestColor = resolvedGuestColor;
                         pvpGuestAltColor = resolvedGuestAltColor;
+                        pvpGuestPattern = parseInt(playerPattern, 10) || 0;
                         pvpGuestLogoObj = resolvedGuestLogo;
                         
                         document.getElementById('pvpLobbyHostName').innerText = pvpHostName;
@@ -5296,7 +5341,7 @@ pvpConn.send({
                         pvpGuestName = guestTeamData.teamName;
                         pvpGuestColor = guestTeamData.teamColor;
                         pvpGuestAltColor = guestTeamData.altColor || '#ffffff';
-                        pvpGuestPattern = guestTeamData.pattern || 0;
+                        pvpGuestPattern = parseInt(guestTeamData.pattern, 10) || 0;
                         pvpGuestLogoObj = guestTeamData.logo;
                         
                         document.getElementById('pvpLobbyGuestName').innerText = pvpGuestName;
@@ -5322,8 +5367,13 @@ pvpConn.send({
                         });
                     }
 
-                    pveBall.x = data.b.x;
-                    pveBall.y = data.b.y;
+                    // Anti-Teleport: Wenn die Abweichung zu groß ist (z.B. Tor gefallen / Kickoff), sofort snappen
+                    if (Math.hypot(pveBall.x - data.b.x, pveBall.y - data.b.y) > 100) {
+                        pveBall.x = data.b.x;
+                        pveBall.y = data.b.y;
+                    }
+                    pveBall.targetX = data.b.x;
+                    pveBall.targetY = data.b.y;
                     
                     pveState.scorePlayer = data.sp;
                     pveState.scoreEnemy = data.se;
@@ -5351,7 +5401,11 @@ pvpConn.send({
                     
                     data.p.forEach((bd, i) => {
                         if(pvePlayerBots[i]) {
-                            pvePlayerBots[i].x = bd.x; pvePlayerBots[i].y = bd.y; pvePlayerBots[i].angle = bd.a; 
+                            if (Math.hypot(pvePlayerBots[i].x - bd.x, pvePlayerBots[i].y - bd.y) > 100) {
+                                pvePlayerBots[i].x = bd.x; pvePlayerBots[i].y = bd.y; pvePlayerBots[i].angle = bd.a;
+                            }
+                            pvePlayerBots[i].targetX = bd.x; pvePlayerBots[i].targetY = bd.y; pvePlayerBots[i].targetAngle = bd.a; 
+                            
                             pvePlayerBots[i].battery = bd.bat; pvePlayerBots[i].isKicking = bd.kick;
                             pvePlayerBots[i].isMovingFast = (Math.abs(bd.m) === 2); pvePlayerBots[i].isMovingNormal = (Math.abs(bd.m) === 1); 
                             pvePlayerBots[i].isMovingBwd = (bd.m < 0);
@@ -5362,7 +5416,11 @@ pvpConn.send({
                     });
                     data.e.forEach((bd, i) => {
                         if(pveEnemyBots[i]) {
-                            pveEnemyBots[i].x = bd.x; pveEnemyBots[i].y = bd.y; pveEnemyBots[i].angle = bd.a; 
+                            if (Math.hypot(pveEnemyBots[i].x - bd.x, pveEnemyBots[i].y - bd.y) > 100) {
+                                pveEnemyBots[i].x = bd.x; pveEnemyBots[i].y = bd.y; pveEnemyBots[i].angle = bd.a;
+                            }
+                            pveEnemyBots[i].targetX = bd.x; pveEnemyBots[i].targetY = bd.y; pveEnemyBots[i].targetAngle = bd.a; 
+                            
                             pveEnemyBots[i].battery = bd.bat; pveEnemyBots[i].isKicking = bd.kick;
                             pveEnemyBots[i].isMovingFast = (Math.abs(bd.m) === 2); pveEnemyBots[i].isMovingNormal = (Math.abs(bd.m) === 1); 
                             pveEnemyBots[i].isMovingBwd = (bd.m < 0);
