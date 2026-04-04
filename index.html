@@ -3470,6 +3470,8 @@
             matchPlayerColor = playerTeamColor; // Sorge dafür, dass im Lab die normale Farbe genutzt wird
             updateEnemyColor(); // Sorge dafür, dass der Labor-Dummy resettet wird (falls man aus der Liga kommt)
             
+            allSensors = [...globalSensors]; // Sicherer Reset auf eigene Sensoren
+            
             testRobot.botId = currentRobotId;
             testRobot.weight = teams[currentRobotId].weight;
             testRobot.name = teams[currentRobotId].name;
@@ -3536,6 +3538,9 @@
             pvePlayerBots = [];
             pveEnemyBots = [];
             
+            // Clean up any dynamically added enemy sensors from previous matches
+            allSensors = [...globalSensors]; // Sicherer Reset auf eigene Sensoren
+
             // Determine enemy team (League or Random for Quick Match)
             if (regenerateEnemy || !currentPvEEnemyTeam) {
                 if (isLeagueMatch && leagueState) {
@@ -5256,7 +5261,8 @@
                             altColor: playerAltColor,
                             pattern: playerPattern,
                             logo: playerLogo,
-                            teams: teams.map(t => ({ name: t.name })) 
+                            teams: teams.map(t => ({ name: t.name })),
+                            sensors: globalSensors.filter(s => s.botId !== null && s.botId < 3).map(s => ({id: s.id, botId: s.botId, x: s.x, y: s.y, normal: s.normal}))
                         })
                     });
                 } else {
@@ -5499,44 +5505,34 @@
                 pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, kickTime: 0, weight: eWeight, battery: 100, isCharging: false, magnetOn: false, isMovingFast: false, isMovingNormal: false, isMovingBwd: false, isTurning: false, isWaiting: false, kx: 0, ky: 0, name: eName, sentSignals: [] });
             }
 
+            // Alte Feind-Sensoren entfernen, damit wir die vom Gast 1:1 übernehmen können
+            allSensors = [...globalSensors]; // Sicherer Reset auf eigene Sensoren
+
             // Apply logic & sensors for guest team
             guestTeamData.teams.forEach((gt, i) => {
                 let bId = i + 3;
                 
-                let s1 = allSensors.find(s => s.id === 'S1' && s.botId === bId);
-                if (!s1) { s1 = { id: 'S1', botId: bId }; allSensors.push(s1); }
-                let s2 = allSensors.find(s => s.id === 'S2' && s.botId === bId);
-                if (!s2) { s2 = { id: 'S2', botId: bId }; allSensors.push(s2); }
-                
-                s1.color = guestTeamData.teamColor;
-                s2.color = guestTeamData.teamColor;
-
-                // --- FIX: Mappe die vom Gast verwendeten Sensor-IDs passend zum Bot-Index ---
-                let expectedS1_ID = i === 0 ? 'S1' : (i === 1 ? 'S3' : 'S5');
-                let expectedS2_ID = i === 0 ? 'S2' : (i === 1 ? 'S4' : 'S6');
-
+                // Wir mappen nicht mehr starr auf S1/S2, sondern übernehmen genau das, was der Gast konfiguriert hat!
                 if (guestTeamData.sensors) {
-                    let gs1 = guestTeamData.sensors.find(s => s.id === expectedS1_ID && s.botId === i);
-                    if (gs1) { s1.x = gs1.x; s1.y = gs1.y; s1.normal = gs1.normal; s1.botId = bId; }
-                    else s1.botId = null;
-
-                    let gs2 = guestTeamData.sensors.find(s => s.id === expectedS2_ID && s.botId === i);
-                    if (gs2) { s2.x = gs2.x; s2.y = gs2.y; s2.normal = gs2.normal; s2.botId = bId; }
-                    else s2.botId = null;
+                    let botSensors = guestTeamData.sensors.filter(s => s.botId === i);
+                    botSensors.forEach(gs => {
+                        allSensors.push({
+                            id: gs.id, // Behält Original-ID S1 bis S6
+                            botId: bId,
+                            x: gs.x,
+                            y: gs.y,
+                            normal: gs.normal,
+                            color: guestTeamData.teamColor // Wirkt einheitlich in der Teamfarbe des Feindes
+                        });
+                    });
                 }
 
                 if (enemyWorkspaces[i] && gt.workspaceJSON) {
                     enemyWorkspaces[i].clear();
                     
-                    // --- FIX: Umschreiben der Sensor-Abfragen im JSON auf die Engine-Internen S1/S2 ---
-                    let jsonStr = JSON.stringify(gt.workspaceJSON);
-                    if (i === 1) {
-                        jsonStr = jsonStr.replace(/"S3"/g, '"S1"').replace(/"S4"/g, '"S2"');
-                    } else if (i === 2) {
-                        jsonStr = jsonStr.replace(/"S5"/g, '"S1"').replace(/"S6"/g, '"S2"');
-                    }
-                    
-                    Blockly.serialization.workspaces.load(JSON.parse(jsonStr), enemyWorkspaces[i]);
+                    // Der Gast-Code kann jetzt OHNE fehleranfälliges String-Replace geladen werden,
+                    // da die Sensor-IDs (S1-S6) in allSensors jetzt zu 100% mit dem Code übereinstimmen!
+                    Blockly.serialization.workspaces.load(gt.workspaceJSON, enemyWorkspaces[i]);
                 }
             });
 
@@ -5569,6 +5565,37 @@
                 pvePlayerBots.push({ botId: i, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, isMovingBwd: false, name: hName, act: {} });
                 pveEnemyBots.push({ botId: i+3, x: 0, y: 0, angle: 0, r: 18, isKicking: false, battery: 100, isWaiting: false, isMovingBwd: false, name: teams[i].name, act: {} });
             }
+
+            // Gast: Wir bauen allSensors komplett neu auf für das Rendering, 
+            // lassen aber globalSensors unberührt, damit das Labor später noch funktioniert.
+            allSensors = [];
+            
+            // 1. Host Sensoren (auf botId 0, 1, 2 = Host Bots)
+            if (hostTeamData && hostTeamData.sensors) {
+                hostTeamData.sensors.forEach(hs => {
+                    let origColorSensor = globalSensors.find(s => s.id === hs.id);
+                    allSensors.push({
+                        id: hs.id,
+                        botId: hs.botId, 
+                        x: hs.x,
+                        y: hs.y,
+                        normal: hs.normal,
+                        color: origColorSensor ? origColorSensor.color : hostTeamData.teamColor
+                    });
+                });
+            }
+            
+            // 2. Eigene (Gast) Sensoren (auf botId 3, 4, 5 verschoben = Eigene Bots aus Sicht des Gastes)
+            globalSensors.filter(s => s.botId !== null && s.botId < 3).forEach(gs => {
+                allSensors.push({
+                    id: gs.id,
+                    botId: gs.botId + 3,
+                    x: gs.x,
+                    y: gs.y,
+                    normal: gs.normal,
+                    color: gs.color
+                });
+            });
             
             transitionToPvPBoard();
             
