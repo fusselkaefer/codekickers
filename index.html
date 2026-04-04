@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta id="metaDescription" name="description" content="Code your own soccer robots and learn programming playfully! Use visual code blocks and sensors to develop clever tactics for your customized team. Prove who writes the ultimate algorithm by dominating the AI league or battling your friends in action-packed PvP multiplayer!">
     <title>CodeKickers</title>
     <link rel="icon" type="image/png" href="https://img.itch.zone/aW1nLzI2Mjg4ODUwLnBuZw==/32x32%23/vGTOxq.png">
     
@@ -70,8 +71,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-12 h-12 drop-shadow-md transform hover:scale-110 transition-transform cursor-pointer">
                 <g stroke="#000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
                     <path d="M 40 15 A 35 35 0 0 0 40 85 Z" fill="#6B89E5" />
-                    <rect x="48" y="15" width="10" height="70" rx="2" fill="#D34A48" />
-                    <path d="M 93 15 L 66 50 L 93 85 Z" fill="#61B75E" />
+                    <rect x="48" y="15" width="10" height="70" rx="2" fill="#FBBF24" />
+                    <path d="M 93 15 L 66 50 L 93 85 Z" fill="#FBBF24" />
                 </g>
             </svg>
             CodeKickers
@@ -1080,6 +1081,7 @@
         // --- TRANSLATION SYSTEM ---
         const i18n = {
             en: {
+                metaDesc: "Code your own soccer robots and learn programming playfully! Use visual code blocks and sensors to develop clever tactics for your customized team. Prove who writes the ultimate algorithm by dominating the AI league or battling your friends in action-packed PvP multiplayer!",
                 navLab: "🛠️ Construction", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Construction",
                 testKickBtn: "🦿 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
@@ -1201,6 +1203,7 @@
                 acceptBtn: "Accept", declineBtn: "Decline"
             },
             de: {
+                metaDesc: "Programmiere deine eigenen Fußball-Roboter und lerne spielerisch Coden! Nutze visuelle Code-Blöcke und Sensoren, um clevere Taktiken für dein Team zu entwickeln. Zeige in der spannenden KI-Liga oder im actionreichen PvP-Multiplayer gegen Freunde, wer den absolut besten Algorithmus schreibt!",
                 navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Konstruktion",
                 testKickBtn: "🦿 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
@@ -1484,6 +1487,9 @@
             document.getElementById('saveCodeBtn').title = t('saveCodeBtn');
             document.getElementById('loadCodeBtn').title = t('loadCodeBtn');
             document.getElementById('halfDisplay').innerText = t('half1');
+            
+            let metaDesc = document.getElementById('metaDescription');
+            if (metaDesc) metaDesc.content = t('metaDesc');
         }
 
         function changeLanguage(lang) {
