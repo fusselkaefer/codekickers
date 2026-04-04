@@ -2664,7 +2664,8 @@
             document.getElementById('pveEnemyNameLabel').style.color = enemyColor;
             document.getElementById('pveEnemyLogo').innerHTML = getLogoSVG(enemyLogo);
 
-            if (currentMode === 'LAB') renderRobotPreview();
+            // Aktualisiere das Lab jetzt immer, egal wo wir uns gerade befinden!
+            renderRobotPreview();
             
             if (leagueState && leagueState.teams) {
                 let playerTeam = leagueState.teams.find(t => t.id === 0);
@@ -2702,6 +2703,8 @@
 
         function closeSettingsModal() {
             document.getElementById('settingsModal').classList.add('hidden');
+            renderRobotPreview();
+            if (!simRunning) drawSim();
         }
 
         function selectColor(hex, isAlt) {
@@ -2720,11 +2723,15 @@
                 updateLogoMakerUI();
             }
             updateColorPickerUI();
+            renderRobotPreview();
+            if (!simRunning) drawSim();
         }
 
         function selectPattern(patId) {
             tempPattern = patId;
             updateColorPickerUI();
+            renderRobotPreview();
+            if (!simRunning) drawSim();
         }
 
         function updateColorPickerUI() {
@@ -3042,6 +3049,7 @@
                 document.getElementById('navLab').classList.replace('bg-transparent', 'bg-blue-600');
                 document.getElementById('navLab').classList.replace('text-slate-400', 'text-white');
                 
+                renderRobotPreview();
                 resetSim();
                 setTimeout(() => {
                     resizeCanvas();
@@ -3361,9 +3369,10 @@
             let batW = 22 * (previewBattery / 100);
             let batColor = previewBattery > 50 ? '#22c55e' : (previewBattery > 20 ? '#eab308' : '#ef4444');
             
-            let bodyColor = playerTeamColor;
-            let bodyAltColor = playerAltColor;
-            let patternType = parseInt(playerPattern, 10) || 0;
+            let isSettingsOpen = !document.getElementById('settingsModal').classList.contains('hidden');
+            let bodyColor = isSettingsOpen ? tempSelectedColor : playerTeamColor;
+            let bodyAltColor = isSettingsOpen ? tempAltColor : playerAltColor;
+            let patternType = parseInt(isSettingsOpen ? tempPattern : playerPattern, 10) || 0;
 
             let patternDef = getPatternSvgDef(patternType, bodyColor, bodyAltColor, 'roboPattern');
             let fillStyle = patternType === 0 ? bodyColor : 'url(#roboPattern)';
@@ -4674,14 +4683,22 @@
             let kickOffset = bot.isKicking ? 20 : 0; 
             
             let bodyColor, botPattern, botAltColor;
+            let isSettingsOpen = !document.getElementById('settingsModal').classList.contains('hidden');
+
             if (currentMode === 'PVP') {
                 bodyColor = isP1 ? pvpHostColor : pvpGuestColor;
                 botPattern = isP1 ? pvpHostPattern : pvpGuestPattern;
                 botAltColor = isP1 ? pvpHostAltColor : pvpGuestAltColor;
             } else {
-                bodyColor = isP1 ? matchPlayerColor : enemyColor;
-                botPattern = isP1 ? playerPattern : (isEnemy ? enemyPattern : playerPattern);
-                botAltColor = isP1 ? matchPlayerAltColor : (isEnemy ? enemyAltColor : matchPlayerAltColor);
+                if (isP1 && isSettingsOpen && currentMode === 'LAB') {
+                    bodyColor = tempSelectedColor;
+                    botPattern = tempPattern;
+                    botAltColor = tempAltColor;
+                } else {
+                    bodyColor = isP1 ? matchPlayerColor : enemyColor;
+                    botPattern = isP1 ? playerPattern : (isEnemy ? enemyPattern : playerPattern);
+                    botAltColor = isP1 ? matchPlayerAltColor : (isEnemy ? enemyAltColor : matchPlayerAltColor);
+                }
             }
             
             botPattern = parseInt(botPattern, 10) || 0;
