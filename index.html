@@ -1103,7 +1103,7 @@
                 lockedRank: "Rank", unlockedPatternMsg: "🎉 League Rank {rank} reached! You unlocked {count} new robot pattern(s)!", leagueWinStarMsg: "🏆 Sensational! You won the league!\nYour team earns a championship star on the logo!",
                 colorBlue: "Blue", colorRed: "Red", colorGreen: "Green", colorPurple: "Purple", colorYellow: "Yellow",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "White", colorGray: "Gray",
-                colorMidGray: "Medium Gray", colorBlack: "Black", colorTeal: "Teal", colorIndigo: "Indigo", colorLime: "Lime", colorDarkRed: "Dark Red", colorDarkGreen: "Dark Green",
+                colorMidGray: "Medium Gray", colorBlack: "Black", colorTeal: "Teal", colorIndigo: "Indigo", colorLime: "Lime", colorDarkRed: "Dark Red", colorGold: "Gold",
                 btnAlgo: "Show Algorithm", actWait: "Wait", actKick: "Kick", actSprint: "Sprint", actMove: "Move", actTurn: "Turn",
                 // Blockly
                 catEvents: "Events", catMovement: "Movement", catControl: "Control", catLoops: "Loops", catSensing: "Sensing", catOperators: "Operators", catComms: "Communication",
@@ -1225,7 +1225,7 @@
                 lockedRank: "Platz", unlockedPatternMsg: "🎉 Liga-Platz {rank} erreicht! Du hast {count} neues Roboter-Muster freigeschaltet!", leagueWinStarMsg: "🏆 Sensationell! Du hast die Liga gewonnen!\nDein Team erhält einen Meisterschafts-Stern auf dem Logo!",
                 colorBlue: "Blau", colorRed: "Rot", colorGreen: "Grün", colorPurple: "Lila", colorYellow: "Gelb",
                 colorOrange: "Orange", colorCyan: "Cyan", colorPink: "Pink", colorWhite: "Weiß", colorGray: "Grau",
-                colorMidGray: "Mittelgrau", colorBlack: "Schwarz", colorTeal: "Blaugrün", colorIndigo: "Indigo", colorLime: "Limette", colorDarkRed: "Dunkelrot", colorDarkGreen: "Dunkelgrün",
+                colorMidGray: "Mittelgrau", colorBlack: "Schwarz", colorTeal: "Blaugrün", colorIndigo: "Indigo", colorLime: "Limette", colorDarkRed: "Dunkelrot", colorGold: "Gold",
                 btnAlgo: "Zeige Algorithmus", actWait: "Warten", actKick: "Kick", actSprint: "Sprint", actMove: "Fahren", actTurn: "Drehen",
                 // Blockly
                 catEvents: "Ereignisse", catMovement: "Bewegung", catControl: "Logik", catLoops: "Schleifen", catSensing: "Sensoren", catOperators: "Operatoren", catComms: "Kommunikation",
@@ -1502,19 +1502,19 @@
 
         // --- TEAM STATE ---
         const TEAM_COLORS = {
+            '#991b1b': 'colorDarkRed',
+            '#ef4444': 'colorRed',
+            '#f97316': 'colorOrange',
+            '#926F34': 'colorGold',
+            '#eab308': 'colorYellow',
+            '#84cc16': 'colorLime',
+            '#22c55e': 'colorGreen',
+            '#14b8a6': 'colorTeal',
+            '#06b6d4': 'colorCyan',
             '#3b82f6': 'colorBlue',
             '#6366f1': 'colorIndigo',
-            '#06b6d4': 'colorCyan',
-            '#14b8a6': 'colorTeal',
-            '#22c55e': 'colorGreen',
-            '#166534': 'colorDarkGreen',
-            '#84cc16': 'colorLime',
-            '#eab308': 'colorYellow',
-            '#f97316': 'colorOrange',
-            '#ef4444': 'colorRed',
-            '#991b1b': 'colorDarkRed',
-            '#ec4899': 'colorPink',
             '#a855f7': 'colorPurple',
+            '#ec4899': 'colorPink',
             '#ffffff': 'colorWhite',
             '#94a3b8': 'colorMidGray',
             '#333333': 'colorBlack'
@@ -1584,8 +1584,8 @@
                         <rect width="100" height="120" fill="url(#${gid})"/>`;
             }
             if(type===6) {
-                svg += `<rect width="35" height="60" fill="${aColor}"/>
-                        <g fill="none" stroke="${pColor}" stroke-width="2.5">
+                svg += `<rect width="35" height="60" fill="${pColor}"/>
+                        <g fill="none" stroke="${aColor}" stroke-width="2.5">
                             <polygon points="17.32,10 34.64,20 34.64,40 17.32,50 0,40 0,20" />
                             <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-20" />
                             <polygon points="34.64,-20 51.96,-10 51.96,10 34.64,20 17.32,10 17.32,-20" />
@@ -1637,8 +1637,8 @@
                         <rect width="100" height="120" fill="url(#${gid})"/>`;
             }
             if(type===6) {
-                svg += `<rect width="35" height="60" fill="${aColor}"/>
-                        <g fill="none" stroke="${pColor}" stroke-width="2.5">
+                svg += `<rect width="35" height="60" fill="${pColor}"/>
+                        <g fill="none" stroke="${aColor}" stroke-width="2.5">
                             <polygon points="17.32,10 34.64,20 34.64,40 17.32,50 0,40 0,20" />
                             <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-20" />
                             <polygon points="34.64,-20 51.96,-10 51.96,10 34.64,20 17.32,10 17.32,-20" />
@@ -1694,7 +1694,7 @@
                 x.fillStyle = grd; x.fillRect(0,0,100,120);
             }
             else if(type===6) {
-                x.fillStyle=aColor; x.fillRect(0,0,35,60); x.strokeStyle=pColor; x.lineWidth=2.5;
+                x.fillStyle=pColor; x.fillRect(0,0,35,60); x.strokeStyle=aColor; x.lineWidth=2.5;
                 ["M17.32,10 L34.64,20 L34.64,40 L17.32,50 L0,40 L0,20 Z",
                  "M0,-20 L17.32,-10 L17.32,10 L0,20 L-17.32,10 L-17.32,-20 Z",
                  "M34.64,-20 L51.96,-10 L51.96,10 L34.64,20 L17.32,10 L17.32,-20 Z",
@@ -1807,13 +1807,13 @@
 
         // Liga-Teams Konfiguration (Dient als Vorlage für dynamische Generierung)
         const LEAGUE_AI_TEAMS_CONFIG = [
-            { id: 1, name: "Crimson Cobras", color: "#ef4444", altColor: "#ffffff", pattern: 6, logo: { shape: 'shield', icon: '🐍', bgColor: '#ef4444', fgColor: '#ffffff' }, tier: 1, names: ["Viper", "Python", "Mamba"] },
-            { id: 2, name: "Neon Knights", color: "#06b6d4", altColor: "#333333", pattern: 4, logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#333333' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
-            { id: 3, name: "Toxic Titans", color: "#22c55e", altColor: "#166534", pattern: 7, logo: { shape: 'hexagon', icon: '☣️', bgColor: '#22c55e', fgColor: '#ffffff' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
-            { id: 4, name: "Golden Gears", color: "#eab308", altColor: "#333333", pattern: 2, logo: { shape: 'circle', icon: '⚙️', bgColor: '#eab308', fgColor: '#333333' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
-            { id: 5, name: "Midnight Mechas", color: "#64748b", altColor: "#ffffff", pattern: 1, logo: { shape: 'shield', icon: 'M', bgColor: '#64748b', fgColor: '#ffffff', stars: 1 }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
-            { id: 6, name: "Plasma Phantoms", color: "#ec4899", altColor: "#ffffff", pattern: 3, logo: { shape: 'circle', icon: '👻', bgColor: '#ec4899', fgColor: '#ffffff', stars: 2 }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
-            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", altColor: "#ffffff", pattern: 5, logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff', stars: 3 }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
+            { id: 1, name: "Crimson Cobras", color: "#991b1b", altColor: "#333333", pattern: 6, logo: { shape: 'shield', icon: '🐍', bgColor: '#991b1b', fgColor: '#ffffff' }, tier: 1, names: ["Viper", "Python", "Mamba"] },
+            { id: 2, name: "Neon Knights", color: "#06b6d4", altColor: "#333333", pattern: 4, logo: { shape: 'square', icon: 'NK', bgColor: '#06b6d4', fgColor: '#ffffff' }, tier: 1, names: ["Lancelot", "Arthur", "Gawain"] },
+            { id: 3, name: "Toxic Titans", color: "#84cc16", altColor: "#22c55e", pattern: 7, logo: { shape: 'hexagon', icon: '☣️', bgColor: '#84cc16', fgColor: '#333333' }, tier: 2, names: ["Ooze", "Sludge", "Smog"] },
+            { id: 4, name: "Golden Gears", color: "#926F34", altColor: "#333333", pattern: 2, logo: { shape: 'circle', icon: '⚙️', bgColor: '#926F34', fgColor: '#ffffff' }, tier: 2, names: ["Cog", "Sprocket", "Piston"] },
+            { id: 5, name: "Midnight Mechas", color: "#6366f1", altColor: "#333333", pattern: 1, logo: { shape: 'shield', icon: 'M', bgColor: '#6366f1', fgColor: '#ffffff', stars: 1 }, tier: 3, names: ["Shadow", "Stealth", "Ghost"] },
+            { id: 6, name: "Plasma Phantoms", color: "#a855f7", altColor: "#ec4899", pattern: 3, logo: { shape: 'circle', icon: '👻', bgColor: '#a855f7', fgColor: '#ffffff', stars: 2 }, tier: 3, names: ["Spark", "Flare", "Pulse"] },
+            { id: 7, name: "Cobalt Cyborgs", color: "#3b82f6", altColor: "#06b6d4", pattern: 5, logo: { shape: 'hexagon', icon: 'C', bgColor: '#3b82f6', fgColor: '#ffffff', stars: 3 }, tier: 4, names: ["Alpha", "Beta", "Gamma"] }
         ];
 
         function generateRandomTeamBots(tier, names) {
@@ -3084,6 +3084,7 @@
         function selectRobot(id) {
             currentRobotId = id;
             selectedSensorId = null; 
+            previewBattery = 100; // Reset battery on tab switch
             
             for(let i=0; i<3; i++) {
                 let tab = document.getElementById(`tab-${i}`);
@@ -3299,46 +3300,66 @@
         let isPreviewKicking = false;
         let previewSensingTimer = 0;
         let isPreviewSensing = false;
+        let previewBattery = 100;
+
+        // Background loop for realistic battery recharge in Lab
+        setInterval(() => {
+            if (previewBattery < 100) {
+                previewBattery += 0.15; // Realistic recharge rate
+                if (previewBattery > 100) previewBattery = 100;
+                if (currentMode === 'LAB' && !simRunning && !isPreviewKicking && !isPreviewSensing) {
+                    renderRobotPreview();
+                }
+            }
+        }, 16);
 
         function testKickAnim() {
+            if (previewBattery < 20) return; // Need 20% battery to kick
+            previewBattery -= 20;
+
             SoundEngine.init();
+            SoundEngine.playKick(); // Play the actual kick sound!
+
             isPreviewKicking = true;
             previewKickTimer = 25; 
             renderRobotPreview();
-            setTimeout(() => {
-                let interval = setInterval(() => {
-                    previewKickTimer--;
+
+            if (window.previewKickInterval) clearInterval(window.previewKickInterval);
+            
+            window.previewKickInterval = setInterval(() => {
+                previewKickTimer--;
+                renderRobotPreview();
+                if(previewKickTimer <= 0) {
+                    isPreviewKicking = false;
                     renderRobotPreview();
-                    if(previewKickTimer <= 0) {
-                        isPreviewKicking = false;
-                        renderRobotPreview();
-                        clearInterval(interval);
-                    }
-                }, 20);
-            }, 10);
+                    clearInterval(window.previewKickInterval);
+                }
+            }, 20);
         }
 
         function testSensorsAnim() {
             isPreviewSensing = true;
             previewSensingTimer = 40; 
             renderRobotPreview();
-            setTimeout(() => {
-                let interval = setInterval(() => {
-                    previewSensingTimer--;
+
+            if (window.previewSensingInterval) clearInterval(window.previewSensingInterval);
+
+            window.previewSensingInterval = setInterval(() => {
+                previewSensingTimer--;
+                renderRobotPreview();
+                if(previewSensingTimer <= 0) {
+                    isPreviewSensing = false;
                     renderRobotPreview();
-                    if(previewSensingTimer <= 0) {
-                        isPreviewSensing = false;
-                        renderRobotPreview();
-                        clearInterval(interval);
-                    }
-                }, 20);
-            }, 10);
+                    clearInterval(window.previewSensingInterval);
+                }
+            }, 20);
         }
 
         function getRobotSVG(isKicking, isSensing) {
             let kickOffset = isKicking ? 25 : 0;
-            let batColor = '#22c55e';
-            let batW = 22;
+            
+            let batW = 22 * (previewBattery / 100);
+            let batColor = previewBattery > 50 ? '#22c55e' : (previewBattery > 20 ? '#eab308' : '#ef4444');
             
             let bodyColor = playerTeamColor;
             let bodyAltColor = playerAltColor;
