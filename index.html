@@ -80,7 +80,7 @@
         
         <!-- View Switcher -->
         <div class="bg-slate-800 p-1 rounded-full flex shadow-inner border border-slate-700 overflow-x-auto custom-scrollbar">
-            <button id="navLab" onclick="setMode('LAB')" class="px-5 py-1.5 rounded-full bg-blue-600 text-white font-bold shadow transition-all text-sm whitespace-nowrap" data-i18n="navLab">🛠️ Construction</button>
+            <button id="navLab" onclick="setMode('LAB')" class="px-5 py-1.5 rounded-full bg-blue-600 text-white font-bold shadow transition-all text-sm whitespace-nowrap" data-i18n="navLab">🛠️ Lab</button>
             <button id="navPvE" onclick="setMode('PVE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvE">⚽️ Schnellspiel</button>
             <button id="navLeague" onclick="setMode('LEAGUE')" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navLeague">🏆 Liga</button>
             <button id="navPvP" onclick="handlePvPClick()" class="px-5 py-1.5 rounded-full bg-transparent text-slate-400 font-bold hover:text-white transition-all text-sm whitespace-nowrap" data-i18n="navPvP">🌐 Online Multiplayer</button>
@@ -149,13 +149,13 @@
             <!-- Construction -->
             <div class="flex flex-col p-3 border-b border-slate-700 relative shrink-0">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-md text-slate-300 font-bold uppercase tracking-wider" data-i18n="constructionTitle">Construction</h2>
+                    <h2 class="text-md text-slate-300 font-bold uppercase tracking-wider" data-i18n="constructionTitle">Lab</h2>
                     
                     <!-- Robot Tabs -->
                     <div class="flex space-x-1" id="robotTabs">
-                        <button onclick="selectRobot(0)" id="tab-0" class="px-3 py-1 rounded bg-yellow-500 text-slate-900 font-bold border border-yellow-600 shadow-sm transform scale-105 transition-all text-xs">R1</button>
-                        <button onclick="selectRobot(1)" id="tab-1" class="px-3 py-1 rounded bg-slate-700 text-white border border-slate-600 shadow-sm opacity-70 hover:opacity-100 transition-all text-xs">R2</button>
-                        <button onclick="selectRobot(2)" id="tab-2" class="px-3 py-1 rounded bg-slate-700 text-white border border-slate-600 shadow-sm opacity-70 hover:opacity-100 transition-all text-xs">R3</button>
+                        <button onclick="selectRobot(0)" id="tab-0" class="px-3 py-1 rounded bg-yellow-500 text-slate-900 font-bold border border-yellow-600 shadow-sm transform scale-105 transition-all text-xs">Bot 1</button>
+                        <button onclick="selectRobot(1)" id="tab-1" class="px-3 py-1 rounded bg-slate-700 text-white border border-slate-600 shadow-sm opacity-70 hover:opacity-100 transition-all text-xs">Bot 2</button>
+                        <button onclick="selectRobot(2)" id="tab-2" class="px-3 py-1 rounded bg-slate-700 text-white border border-slate-600 shadow-sm opacity-70 hover:opacity-100 transition-all text-xs">Bot 3</button>
                     </div>
                 </div>
 
@@ -591,9 +591,9 @@
 
             <hr class="border-slate-700 my-4">
             <h3 class="text-sm font-bold text-white mb-2" data-i18n="logoMakerTitle">Logo Maker</h3>
-            <div class="flex gap-4 items-center bg-slate-800 p-3 rounded-lg border border-slate-600 mb-6">
-                <div id="settingsLogoPreview" class="w-16 h-16 shrink-0 transition-transform hover:scale-105"></div>
-                <div class="flex-1 flex flex-col gap-2">
+            <div class="flex gap-4 items-center bg-slate-800 p-3 rounded-lg border border-slate-600 mb-6 relative overflow-hidden">
+                <div id="settingsLogoPreview" class="w-16 h-16 shrink-0 transition-transform hover:scale-105 z-10"></div>
+                <div class="flex-1 flex flex-col gap-2 z-10">
                     <div class="flex gap-1" id="logoShapeSelect">
                         <button onclick="setLogoShape('circle')" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center hover:bg-slate-600 border border-transparent">⚪</button>
                         <button onclick="setLogoShape('square')" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center hover:bg-slate-600 border border-transparent">⬜</button>
@@ -606,6 +606,9 @@
                     </div>
                     <span class="text-[10px] text-slate-400 leading-tight mt-1" data-i18n="logoHint">Max 3 letters or 1 emoji.</span>
                 </div>
+                
+                <!-- Live Robot Preview -->
+                <div id="settingsRobotPreview" class="w-16 h-20 shrink-0 drop-shadow-xl z-10 transform translate-y-1 mr-1 pointer-events-none"></div>
             </div>
             
             <div class="flex justify-end gap-2">
@@ -1082,15 +1085,15 @@
         const i18n = {
             en: {
                 metaDesc: "Code your own soccer robots and learn programming playfully! Use visual code blocks and sensors to develop clever tactics for your customized team. Prove who writes the ultimate algorithm by dominating the AI league or battling your friends in action-packed PvP multiplayer!",
-                navLab: "🛠️ Construction", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
-                saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Construction",
+                navLab: "🛠️ Lab", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
+                saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Lab",
                 testKickBtn: "🦿 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
                 clickPlaceHint: "Click to place/remove", weightFast: "Fast", weightHeavy: "Heavy",
                 testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Start Test", stopBtn: "⏹ Stop Test",
                 matchStartBtn: "▶ Start Match", matchStopBtn: "⏹ End Match", half1: "1st Half", half2: "2nd Half",
                 settingsTitle: "Team Settings", teamNameLabel: "Team Name", teamNameInput: "e.g. Team Blue",
                 teamColorLabel: "Team Color", teamAltColorLabel: "Alternate Color", teamPatternLabel: "Pattern", cancelBtn: "Cancel", saveBtn: "Save", presetsTitle: "Load Code Preset",
-                logoMakerTitle: "Logo Maker", toggleTextColor: "Color", logoHint: "Max 3 letters or 1 emoji.",
+                logoMakerTitle: "Team Logo & Bot Design", toggleTextColor: "Color", logoHint: "Max 3 letters or 1 emoji.",
                 closeBtn: "Close", simRunTitle: "Simulation running...", simRunSub: "Both robots are executing your code!",
                 goal: "GOAL!", matchEnd: "MATCH END", halfTime: "HALF TIME", switchingSides: "Switching sides...", stalemate: "STALEMATE", newKickoff: "Corner Timeout - New Kickoff",
                 draw: "DRAW!", wins: "WINS!", envScored: "Environment Scored!", youScored: "You Scored!", teamScored: " scored!",
@@ -1204,15 +1207,15 @@
             },
             de: {
                 metaDesc: "Programmiere deine eigenen Fußball-Roboter und lerne spielerisch Coden! Nutze visuelle Code-Blöcke und Sensoren, um clevere Taktiken für dein Team zu entwickeln. Zeige in der spannenden KI-Liga oder im actionreichen PvP-Multiplayer gegen Freunde, wer den absolut besten Algorithmus schreibt!",
-                navLab: "🛠️ Konstruktion", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
-                saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Konstruktion",
+                navLab: "🛠️ Werkstatt", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
+                saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Werkstatt",
                 testKickBtn: "🦿 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
                 clickPlaceHint: "Klicken zum Platzieren/Entfernen", weightFast: "Schnell", weightHeavy: "Schwer",
                 testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Test Starten", stopBtn: "⏹ Test Stoppen",
                 matchStartBtn: "▶ Match Starten", matchStopBtn: "⏹ Match Stoppen", half1: "1. Halbzeit", half2: "2. Halbzeit",
                 settingsTitle: "Teameinstellungen", teamNameLabel: "Team Name", teamNameInput: "z.B. Team Blau",
                 teamColorLabel: "Team Farbe", teamAltColorLabel: "Ausweichfarbe", teamPatternLabel: "Muster", cancelBtn: "Abbrechen", saveBtn: "Speichern", presetsTitle: "Code Vorlage Laden",
-                logoMakerTitle: "Team Logo Maker", toggleTextColor: "Farbe", logoHint: "Max. 3 Buchstaben oder 1 Emoji.",
+                logoMakerTitle: "Team Logo und Bot Design", toggleTextColor: "Farbe", logoHint: "Max. 3 Buchstaben oder 1 Emoji.",
                 closeBtn: "Schließen", simRunTitle: "Simulation läuft...", simRunSub: "Roboter führen ihren Code aus!",
                 goal: "TOR!", matchEnd: "MATCH ENDE", halfTime: "HALBZEIT", switchingSides: "Seitenwechsel...", stalemate: "BLOCKIERT", newKickoff: "Ecken-Timeout - Neuer Anstoß",
                 draw: "UNENTSCHIEDEN!", wins: "GEWINNT!", envScored: "Gegner hat getroffen!", youScored: "Du hast getroffen!", teamScored: " hat getroffen!",
@@ -2764,6 +2767,79 @@
             }
             let patternUI = document.getElementById('patternPickerUI');
             if(patternUI) patternUI.innerHTML = htmlPattern;
+
+            // Update der kleinen Vorschau im Einstellungen-Menü
+            updateSettingsRobotPreview();
+        }
+
+        function updateSettingsRobotPreview() {
+            let container = document.getElementById('settingsRobotPreview');
+            if (!container) return;
+            
+            let bodyColor = tempSelectedColor || '#3b82f6';
+            let bodyAltColor = tempAltColor || '#ffffff';
+            let patternType = parseInt(tempPattern, 10) || 0;
+
+            let uniqId = Math.round(Math.random() * 1000000);
+            let patId = 'setPat_' + uniqId;
+            let bGlossId = 'setBGloss_' + uniqId;
+            let dGlossId = 'setDGloss_' + uniqId;
+            let shadowId = 'setShadow_' + uniqId;
+            let clipId = 'setClip_' + uniqId;
+
+            let patternDef = getPatternSvgDef(patternType, bodyColor, bodyAltColor, patId);
+            let fillStyle = patternType === 0 ? bodyColor : `url(#${patId})`;
+
+            // ViewBox angepasst, um nah an den Roboter heranzuzoomen
+            let svgContent = `
+                <svg viewBox="0 25 100 85" class="w-full h-full drop-shadow-lg overflow-visible">
+                <defs>
+                    ${patternDef}
+                    <linearGradient id="${bGlossId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+                        <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05" />
+                        <stop offset="80%" stop-color="#000000" stop-opacity="0.15" />
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.3" />
+                    </linearGradient>
+                    <radialGradient id="${dGlossId}" cx="50%" cy="40%" r="50%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+                        <stop offset="40%" stop-color="#ffffff" stop-opacity="0.05" />
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.3" />
+                    </radialGradient>
+                    <filter id="${shadowId}" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+                    </filter>
+                    <clipPath id="${clipId}">
+                        <path d="M 10 60 A 40 40 0 0 1 90 60 Z" />
+                    </clipPath>
+                </defs>
+
+                <rect x="35" y="60" width="30" height="20" class="robo-dark robo-stroke" filter="url(#${shadowId})" />
+                
+                <g filter="url(#${shadowId})">
+                    <path d="M 30 80 L 70 80 L 70 90 L 30 90 Z" fill="#1e293b" class="robo-stroke" />
+                    <rect x="5" y="90" width="90" height="15" rx="3" fill="${fillStyle}" class="robo-stroke" />
+                    <rect x="5" y="90" width="90" height="15" rx="3" fill="url(#${bGlossId})" />
+                </g>
+
+                <g filter="url(#${shadowId})">
+                    <path d="M 10 60 A 40 40 0 0 1 90 60 Z" fill="${fillStyle}" class="robo-stroke" />
+                </g>
+                <path d="M 10 60 A 40 40 0 0 1 90 60 Z" fill="url(#${dGlossId})" />
+                
+                <path d="M 38 32 h 22 a 2 2 0 0 1 2 2 v 1 h 2 a 1 1 0 0 1 1 1 v 2 a 1 1 0 0 1 -1 1 h -2 v 1 a 2 2 0 0 1 -2 2 h -22 a 2 2 0 0 1 -2 -2 v -6 a 2 2 0 0 1 2 -2 Z" fill="#0f172a" class="robo-stroke" />
+                <rect x="38" y="34" width="22" height="6" rx="1" fill="#22c55e" />
+                <rect x="38" y="34.5" width="22" height="2" rx="0.5" fill="rgba(255,255,255,0.7)" />
+
+                <g clip-path="url(#${clipId})">
+                    <ellipse cx="35" cy="60" rx="10" ry="15" fill="#111" />
+                    <ellipse cx="65" cy="60" rx="10" ry="15" fill="#111" />
+                    <ellipse cx="35" cy="56" rx="4" ry="6" fill="rgba(255,255,255,0.25)" />
+                    <ellipse cx="65" cy="56" rx="4" ry="6" fill="rgba(255,255,255,0.25)" />
+                </g>
+                </svg>
+            `;
+            container.innerHTML = svgContent;
         }
 
         function setLogoShape(shape) {
