@@ -5511,19 +5511,32 @@
                 s1.color = guestTeamData.teamColor;
                 s2.color = guestTeamData.teamColor;
 
+                // --- FIX: Mappe die vom Gast verwendeten Sensor-IDs passend zum Bot-Index ---
+                let expectedS1_ID = i === 0 ? 'S1' : (i === 1 ? 'S3' : 'S5');
+                let expectedS2_ID = i === 0 ? 'S2' : (i === 1 ? 'S4' : 'S6');
+
                 if (guestTeamData.sensors) {
-                    let gs1 = guestTeamData.sensors.find(s => s.id === 'S1' && s.botId === i);
+                    let gs1 = guestTeamData.sensors.find(s => s.id === expectedS1_ID && s.botId === i);
                     if (gs1) { s1.x = gs1.x; s1.y = gs1.y; s1.normal = gs1.normal; s1.botId = bId; }
                     else s1.botId = null;
 
-                    let gs2 = guestTeamData.sensors.find(s => s.id === 'S2' && s.botId === i);
+                    let gs2 = guestTeamData.sensors.find(s => s.id === expectedS2_ID && s.botId === i);
                     if (gs2) { s2.x = gs2.x; s2.y = gs2.y; s2.normal = gs2.normal; s2.botId = bId; }
                     else s2.botId = null;
                 }
 
                 if (enemyWorkspaces[i] && gt.workspaceJSON) {
                     enemyWorkspaces[i].clear();
-                    Blockly.serialization.workspaces.load(gt.workspaceJSON, enemyWorkspaces[i]);
+                    
+                    // --- FIX: Umschreiben der Sensor-Abfragen im JSON auf die Engine-Internen S1/S2 ---
+                    let jsonStr = JSON.stringify(gt.workspaceJSON);
+                    if (i === 1) {
+                        jsonStr = jsonStr.replace(/"S3"/g, '"S1"').replace(/"S4"/g, '"S2"');
+                    } else if (i === 2) {
+                        jsonStr = jsonStr.replace(/"S5"/g, '"S1"').replace(/"S6"/g, '"S2"');
+                    }
+                    
+                    Blockly.serialization.workspaces.load(JSON.parse(jsonStr), enemyWorkspaces[i]);
                 }
             });
 
