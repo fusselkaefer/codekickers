@@ -168,11 +168,11 @@
                 <!-- Sensors Label -->
                 <div class="flex justify-between items-end mb-1.5 px-1">
                     <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest drop-shadow-sm" data-i18n="sensorsLabel">Sensors (Max 6)</span>
-                    <span class="text-[9px] text-slate-400 drop-shadow-sm" data-i18n="clickPlaceHint">Click to place/remove</span>
+                    <span class="text-[9px] text-slate-400 drop-shadow-sm" data-i18n="dragDropHint">Drag & Drop to equip</span>
                 </div>
 
                 <!-- Integrated SVG Container & Sensor Pool (Left/Right) -->
-                <div class="relative w-full h-[240px] mx-auto bg-slate-700/50 rounded-lg shadow-inner border border-slate-600 flex overflow-hidden">
+                <div class="relative w-full h-[240px] mx-auto bg-slate-700/50 rounded-lg shadow-inner border border-slate-600 flex overflow-hidden" style="touch-action: none;">
                     <!-- Left Sensors -->
                     <div class="w-[80px] bg-slate-900/80 backdrop-blur-sm border-r border-slate-600 p-1.5 flex flex-col justify-center gap-2 z-10 shrink-0" id="sensorPoolLeft"></div>
                     
@@ -1088,8 +1088,7 @@
                 navLab: "🛠️ Lab", navPvE: "⚽️ Quick Match", navLeague: "🏆 League", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Save Code", loadCodeBtn: "📂 Load Code", constructionTitle: "Lab",
                 testKickBtn: "🦿 Test Kick", testSensorsBtn: "📡 Test Sensors", sensorsLabel: "Sensors (Max 6)",
-                clickPlaceHint: "Click to place/remove", weightFast: "Fast", weightHeavy: "Heavy",
-                testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Start Test", stopBtn: "⏹ Stop Test",
+                dragDropHint: "Drag & Drop to equip", weightFast: "Fast", weightHeavy: "Heavy",                testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Start Test", stopBtn: "⏹ Stop Test",
                 matchStartBtn: "▶ Start Match", matchStopBtn: "⏹ End Match", half1: "1st Half", half2: "2nd Half",
                 settingsTitle: "Team Settings", teamNameLabel: "Team Name", teamNameInput: "e.g. Team Blue",
                 teamColorLabel: "Team Color", teamAltColorLabel: "Alternate Color", teamPatternLabel: "Pattern", cancelBtn: "Cancel", saveBtn: "Save", presetsTitle: "Load Code Preset",
@@ -1210,8 +1209,7 @@
                 navLab: "🛠️ Werkstatt", navPvE: "⚽️ Schnellspiel", navLeague: "🏆 Liga", navPvP: "🌐 Online Multiplayer", importBtn: "📥 Import", exportBtn: "📤 Export",
                 saveCodeBtn: "💾 Sichern", loadCodeBtn: "📂 Laden", constructionTitle: "Werkstatt",
                 testKickBtn: "🦿 Kick Testen", testSensorsBtn: "📡 Sensoren Testen", sensorsLabel: "Sensoren (Max 6)",
-                clickPlaceHint: "Klicken zum Platzieren/Entfernen", weightFast: "Schnell", weightHeavy: "Schwer",
-                testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Test Starten", stopBtn: "⏹ Test Stoppen",
+                dragDropHint: "Ziehen & Ablegen zum Ausrüsten", weightFast: "Schnell", weightHeavy: "Schwer",                testArenaTitle: "Test Arena (1v1)", startBtn: "▶ Test Starten", stopBtn: "⏹ Test Stoppen",
                 matchStartBtn: "▶ Match Starten", matchStopBtn: "⏹ Match Stoppen", half1: "1. Halbzeit", half2: "2. Halbzeit",
                 settingsTitle: "Teameinstellungen", teamNameLabel: "Team Name", teamNameInput: "z.B. Team Blau",
                 teamColorLabel: "Team Farbe", teamAltColorLabel: "Ausweichfarbe", teamPatternLabel: "Muster", cancelBtn: "Abbrechen", saveBtn: "Speichern", presetsTitle: "Code Vorlage Laden",
@@ -1745,9 +1743,9 @@
 
         let allSensors = globalSensors.concat(enemySensors);
 
-        let selectedSensorId = null;
-        let draggingSensor = null;
-        let dragStartPt = {x: 0, y: 0};
+        let activeDragSensor = null;
+        let dragStartCoords = {x: 0, y: 0};
+        let wasAlreadyOnBot = false;
         
         const DEFAULT_BOT_NAMES = [
             "Billy", "Fiona", "Robin", "Alex", "Sam", "Mia", "Leo", "Emma", 
@@ -3122,28 +3120,24 @@
             let rightHtml = '';
             globalSensors.forEach((s, index) => {
                 let isPlaced = s.botId !== null;
-                let isSelected = selectedSensorId === s.id;
                 let locName = t(s.nameKey);
                 
                 let btnHtml = '';
-                if (isPlaced) {
-                    let rText = s.botId !== currentRobotId ? ` (R${s.botId+1})` : '';
+                if (isPlaced && s.botId === currentRobotId) {
+                    // Wird bereits auf dem aktuellen SVG gerendert -> Im Pool als inaktiv markieren
                     btnHtml = `
-                        <div class="flex flex-col items-stretch rounded overflow-hidden ring-1 ring-slate-500 shadow-sm opacity-90 w-full">
-                            <div class="text-center py-1 text-[10px] font-bold text-black opacity-80 leading-none truncate px-1" style="background-color: ${s.color};">
-                                ${locName}${rText}
-                            </div>
-                            <button onclick="removeSensor('${s.id}')" title="Remove" class="bg-slate-700 hover:bg-red-500 text-white w-full py-1.5 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer touch-manipulation leading-none">
-                                ✕
-                            </button>
+                        <div class="w-full py-2.5 rounded text-xs font-bold text-slate-400 transition-all truncate px-1 ring-1 ring-slate-700 bg-slate-800/50 flex flex-col items-center justify-center cursor-default">
+                            <span>${locName}</span>
                         </div>`;
                 } else {
-                    let border = isSelected ? 'ring-2 ring-white scale-105 shadow-md' : 'ring-1 ring-slate-600 shadow-sm';
+                    // Nicht platziert ODER auf anderem Roboter -> Frei zum Ziehen!
+                    let rText = (isPlaced && s.botId !== currentRobotId) ? ` (Bot ${s.botId+1})` : '';
                     btnHtml = `
-                        <button onclick="selectSensorForPlacement('${s.id}')" title="Place"
-                                class="w-full py-2.5 rounded text-[10px] font-bold text-black transition-all hover:scale-105 cursor-pointer touch-manipulation truncate px-1 ${border}"
+                        <button onpointerdown="startGlobalSensorDrag(event, '${s.id}')" 
+                                class="w-full py-2.5 rounded text-xs font-bold text-black transition-transform hover:scale-105 cursor-grab touch-none truncate px-1 ring-1 ring-slate-600 shadow-md flex flex-col items-center justify-center leading-tight"
                                 style="background-color: ${s.color};">
-                            ${locName}
+                            <span>${locName}</span>
+                            ${rText ? `<span class="text-[10px] opacity-80">${rText}</span>` : ''}
                         </button>`;
                 }
 
@@ -3154,146 +3148,143 @@
             document.getElementById('sensorPoolRight').innerHTML = rightHtml;
         }
 
-        function removeSensor(id) {
-            let s = globalSensors.find(x => x.id === id);
-            if(s) s.botId = null;
-            selectedSensorId = null;
+        function snapToRobotPerimeter(x, y) {
+            let cx = 50, cy = 60, r = 40;
+
+            // Definiere das exakte "Drahtmodell" des Roboters (Kanten)
+            const edges = [
+                // Format: [minX, maxX, minY, maxY, angle]
+                [10, 35, 60, 60, Math.PI/2],  // Linker Overhang (Kopf-Unterseite)
+                [65, 90, 60, 60, Math.PI/2],  // Rechter Overhang (Kopf-Unterseite)
+                [35, 35, 60, 80, Math.PI],    // Hals links (vertikal)
+                [30, 35, 80, 80, -Math.PI/2], // Schulter links (horizontal)
+                [30, 30, 80, 90, Math.PI],    // Base links (vertikal)
+                [5, 30, 90, 90, -Math.PI/2],  // Bumper Top links (horizontal)
+                [5, 5, 90, 105, Math.PI],     // Bumper Seite links (vertikal)
+                [65, 65, 60, 80, 0],          // Hals rechts
+                [65, 70, 80, 80, -Math.PI/2], // Schulter rechts
+                [70, 70, 80, 90, 0],          // Base rechts
+                [70, 95, 90, 90, -Math.PI/2], // Bumper Top rechts
+                [95, 95, 90, 105, 0],         // Bumper Seite rechts
+                [5, 95, 105, 105, Math.PI/2]  // Unterseite Bumper
+            ];
+
+            let bestSnap = { x: cx, y: cy - r, angle: -Math.PI/2 }; // Default (Oben)
+            let minDist = Infinity;
+
+            // 1. Distanz zur runden Kuppel berechnen
+            if (y <= 65) {
+                let angle = Math.atan2(y - cy, x - cx);
+                if (angle > 0) angle = x < 50 ? -Math.PI : 0; // Kappen
+                let arcX = cx + r * Math.cos(angle);
+                let arcY = cy + r * Math.sin(angle);
+                
+                // Nur werten, wenn der Punkt wirklich auf dem runden Teil liegt
+                if (arcY <= 60) {
+                    minDist = Math.hypot(x - arcX, y - arcY);
+                    bestSnap = { x: arcX, y: arcY, angle: angle };
+                }
+            }
+
+            // 2. Distanz zu allen eckigen Kanten prüfen und überschreiben, falls näher
+            for (let e of edges) {
+                let snapX = Math.max(e[0], Math.min(e[1], x));
+                let snapY = Math.max(e[2], Math.min(e[3], y));
+                let d = Math.hypot(x - snapX, y - snapY);
+                
+                if (d < minDist) {
+                    minDist = d;
+                    bestSnap = { x: snapX, y: snapY, angle: e[4] };
+                }
+            }
+
+            return bestSnap;
+        }
+
+        function startGlobalSensorDrag(evt, sensorId) {
+            evt.preventDefault();
+            activeDragSensor = sensorId;
+            dragStartCoords = { x: evt.clientX, y: evt.clientY };
+            
+            let s = globalSensors.find(x => x.id === sensorId);
+            wasAlreadyOnBot = (s.botId === currentRobotId);
+            
+            s.botId = currentRobotId; // Sofort sichtbar machen
+            
+            moveGlobalSensorDrag(evt); 
+            
+            document.addEventListener('pointermove', moveGlobalSensorDrag);
+            document.addEventListener('pointerup', endGlobalSensorDrag);
+            document.addEventListener('pointercancel', endGlobalSensorDrag);
+            
+            renderSensorPoolUI();
+        }
+
+        function moveGlobalSensorDrag(evt) {
+            if (!activeDragSensor) return;
+            
+            let svg = document.getElementById('configSvg');
+            if (!svg) return;
+            
+            let pt = svg.createSVGPoint();
+            pt.x = evt.clientX; pt.y = evt.clientY;
+            let localPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+            
+            let s = globalSensors.find(x => x.id === activeDragSensor);
+            let dist = Math.hypot(localPt.x - 50, localPt.y - 60);
+            
+            if (dist < 90 && localPt.y > 0) { 
+                // Nah am Roboter -> Einrasten
+                let snapped = snapToRobotPerimeter(localPt.x, localPt.y);
+                s.x = snapped.x;
+                s.y = snapped.y;
+                s.normal = snapped.angle;
+            } else {
+                // Außerhalb -> Frei dem Finger folgen
+                s.x = localPt.x;
+                s.y = localPt.y;
+                s.normal = Math.atan2(60 - localPt.y, 50 - localPt.x); // Guckt immer zur Mitte
+            }
+            
+            renderRobotPreview();
+        }
+
+        function endGlobalSensorDrag(evt) {
+            if (!activeDragSensor) return;
+            
+            let svg = document.getElementById('configSvg');
+            if (svg) {
+                let pt = svg.createSVGPoint();
+                pt.x = evt.clientX; pt.y = evt.clientY;
+                let localPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+                
+                let dist = Math.hypot(localPt.x - 50, localPt.y - 60);
+                let draggedDist = Math.hypot(evt.clientX - dragStartCoords.x, evt.clientY - dragStartCoords.y);
+                let s = globalSensors.find(x => x.id === activeDragSensor);
+                
+                // QoL: Wenn in den Raum gedroppt oder auf dem Roboter nur angetippt -> Entfernen
+                if (dist >= 90 || localPt.y <= 10 || (draggedDist < 5 && wasAlreadyOnBot)) {
+                    s.botId = null;
+                } else if (draggedDist < 5 && !wasAlreadyOnBot) {
+                    // QoL: Im Pool nur angetippt -> Auto-Place
+                    let snapped = snapToRobotPerimeter(localPt.x, localPt.y);
+                    s.x = snapped.x; s.y = snapped.y; s.normal = snapped.angle;
+                } else {
+                    // Finales exaktes Einrasten
+                    let snapped = snapToRobotPerimeter(localPt.x, localPt.y);
+                    s.x = snapped.x; s.y = snapped.y; s.normal = snapped.angle;
+                }
+            }
+            
+            activeDragSensor = null;
+            document.removeEventListener('pointermove', moveGlobalSensorDrag);
+            document.removeEventListener('pointerup', endGlobalSensorDrag);
+            document.removeEventListener('pointercancel', endGlobalSensorDrag);
+            
             renderSensorPoolUI();
             renderRobotPreview();
             autoSave();
             if(simRunning) resetSim();
-        }
-
-        function selectSensorForPlacement(id) {
-            if (selectedSensorId === id) selectedSensorId = null;
-            else selectedSensorId = id;
-            renderSensorPoolUI();
-        }
-
-        function snapToRobotPerimeter(px, py) {
-            let bestDist = Infinity;
-            let bestPt = { x: 50, y: 20, angle: -Math.PI/2 };
-
-            let a = Math.atan2(py - 60, px - 50);
-            if (a < 0) { 
-                let cx = 50 + 40 * Math.cos(a);
-                let cy = 60 + 40 * Math.sin(a);
-                let dist = Math.hypot(px - cx, py - cy);
-                if (dist < bestDist) { bestDist = dist; bestPt = { x: cx, y: cy, angle: a }; }
-            } else {
-                let d1 = Math.hypot(px - 90, py - 60);
-                if (d1 < bestDist) { bestDist = d1; bestPt = { x: 90, y: 60, angle: 0 }; }
-                let d2 = Math.hypot(px - 10, py - 60);
-                if (d2 < bestDist) { bestDist = d2; bestPt = { x: 10, y: 60, angle: Math.PI }; }
-            }
-
-            const segments = [
-                { x1: 90, y1: 60, x2: 65, y2: 60, norm: Math.PI/2 }, 
-                { x1: 65, y1: 60, x2: 65, y2: 80, norm: 0 },         
-                { x1: 65, y1: 80, x2: 70, y2: 80, norm: -Math.PI/2 },
-                { x1: 70, y1: 80, x2: 70, y2: 90, norm: 0 },         
-                { x1: 70, y1: 90, x2: 95, y2: 90, norm: -Math.PI/2 },
-                { x1: 95, y1: 90, x2: 95, y2: 105, norm: 0 },        
-                { x1: 95, y1: 105, x2: 5, y2: 105, norm: Math.PI/2 },
-                { x1: 5, y1: 105, x2: 5, y2: 90, norm: Math.PI },    
-                { x1: 5, y1: 90, x2: 30, y2: 90, norm: -Math.PI/2 }, 
-                { x1: 30, y1: 90, x2: 30, y2: 80, norm: Math.PI },   
-                { x1: 30, y1: 80, x2: 35, y2: 80, norm: -Math.PI/2 },
-                { x1: 35, y1: 80, x2: 35, y2: 60, norm: Math.PI },   
-                { x1: 35, y1: 60, x2: 10, y2: 60, norm: Math.PI/2 }  
-            ];
-
-            for (let seg of segments) {
-                let l2 = Math.pow(seg.x1 - seg.x2, 2) + Math.pow(seg.y1 - seg.y2, 2);
-                let t = 0;
-                if (l2 !== 0) {
-                    t = ((px - seg.x1) * (seg.x2 - seg.x1) + (py - seg.y1) * (seg.y2 - seg.y1)) / l2;
-                    t = Math.max(0, Math.min(1, t));
-                }
-                let cx = seg.x1 + t * (seg.x2 - seg.x1);
-                let cy = seg.y1 + t * (seg.y2 - seg.y1);
-                let dist = Math.hypot(px - cx, py - cy);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestPt = { x: cx, y: cy, angle: seg.norm };
-                }
-            }
-            return bestPt;
-        }
-
-        function handleSvgPointerDown(evt) {
-            let svg = document.getElementById('configSvg');
-            let pt = svg.createSVGPoint();
-            pt.x = evt.clientX; pt.y = evt.clientY;
-            let localPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-            dragStartPt = {x: localPt.x, y: localPt.y};
-            
-            let clickedSensor = null;
-            let minDist = 15; 
-            
-            for(let s of globalSensors) {
-                if(s.botId === currentRobotId) {
-                    let dist = Math.hypot(localPt.x - s.x, localPt.y - s.y);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        clickedSensor = s.id;
-                    }
-                }
-            }
-
-            if (clickedSensor) {
-                draggingSensor = clickedSensor;
-                svg.setPointerCapture(evt.pointerId);
-            } else if (selectedSensorId) {
-                draggingSensor = selectedSensorId;
-                selectedSensorId = null;
-                svg.setPointerCapture(evt.pointerId);
-                handleSvgPointerMove(evt);
-            }
-        }
-
-        function handleSvgPointerMove(evt) {
-            if (!draggingSensor) return;
-            
-            let svg = document.getElementById('configSvg');
-            let pt = svg.createSVGPoint();
-            pt.x = evt.clientX; pt.y = evt.clientY;
-            let localPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-            
-            let s = globalSensors.find(x => x.id === draggingSensor);
-            let snapped = snapToRobotPerimeter(localPt.x, localPt.y);
-            
-            s.x = snapped.x;
-            s.y = snapped.y;
-            s.normal = snapped.angle;
-            
-            let distToBotCenter = Math.hypot(localPt.x - 50, localPt.y - 60);
-            if (distToBotCenter > 80 && localPt.y > 10) {
-                s.botId = null; 
-            } else {
-                s.botId = currentRobotId;
-            }
-            
-            renderSensorPoolUI();
-            renderRobotPreview();
-        }
-
-        function handleSvgPointerUp(evt) {
-            if (draggingSensor) {
-                let svg = document.getElementById('configSvg');
-                let pt = svg.createSVGPoint();
-                pt.x = evt.clientX; pt.y = evt.clientY;
-                let localPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-
-                if (Math.hypot(localPt.x - dragStartPt.x, localPt.y - dragStartPt.y) < 3) {
-                    removeSensor(draggingSensor);
-                }
-
-                document.getElementById('configSvg').releasePointerCapture(evt.pointerId);
-                draggingSensor = null;
-                autoSave();
-                if(simRunning) resetSim(); 
-            }
         }
 
         function updateWeight(val) {
@@ -3448,8 +3439,7 @@
                 }
 
                 svgContent += `
-                    <g transform="translate(${sx}, ${sy}) rotate(${s.normal * 180 / Math.PI})" class="cursor-grab">
-                        ${coneStr}
+                        <g transform="translate(${sx}, ${sy}) rotate(${s.normal * 180 / Math.PI})" class="cursor-grab" onpointerdown="startGlobalSensorDrag(event, '${s.id}')" style="touch-action: none;">                        ${coneStr}
                         <rect x="-5" y="-10" width="20" height="20" fill="transparent" />
                         <rect x="0" y="-6" width="8" height="12" rx="2" fill="#333" class="robo-stroke" filter="url(#svgDropShadow)"/>
                         <rect x="2" y="-4" width="4" height="8" rx="1" fill="${s.color}" ${isSensing ? 'filter="url(#svgGlow)"' : ''}/>
@@ -3457,8 +3447,7 @@
                 `;
             });
 
-            return `<svg id="configSvg" onpointerdown="handleSvgPointerDown(event)" onpointermove="handleSvgPointerMove(event)" onpointerup="handleSvgPointerUp(event)" onpointercancel="handleSvgPointerUp(event)" viewBox="-10 -10 120 180" class="w-full h-full drop-shadow-xl overflow-visible touch-none">${svgContent}</svg>`;
-        }
+                return `<svg id="configSvg" viewBox="-10 -10 120 180" class="w-full h-full drop-shadow-xl overflow-visible touch-none">${svgContent}</svg>`;        }
 
         function renderRobotPreview() {
             document.getElementById('svgContainer').innerHTML = getRobotSVG(isPreviewKicking, isPreviewSensing);
