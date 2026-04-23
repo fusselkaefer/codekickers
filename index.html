@@ -68,11 +68,46 @@
     <!-- Top Navigation Header -->
     <header class="bg-slate-900 p-3 shadow-xl z-30 flex justify-between items-center border-b border-slate-700 shrink-0">
         <h1 class="text-xl font-bold text-yellow-400 flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-12 h-12 drop-shadow-md transform hover:scale-110 transition-transform cursor-pointer">
-                <g stroke="#000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-                    <path d="M 40 15 A 35 35 0 0 0 40 85 Z" fill="#F7931E" />
-                    <rect x="48" y="15" width="10" height="70" rx="2" fill="#F7931E" />
-                    <path d="M 93 15 L 66 50 L 93 85 Z" fill="#F7931E" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 25 100 85" class="w-12 h-12 drop-shadow-md transform hover:scale-110 transition-transform cursor-pointer">
+                <defs>
+                    <linearGradient id="headerB_Gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+                        <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05" />
+                        <stop offset="80%" stop-color="#000000" stop-opacity="0.15" />
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.3" />
+                    </linearGradient>
+                    <radialGradient id="headerD_Gloss" cx="50%" cy="40%" r="50%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+                        <stop offset="40%" stop-color="#ffffff" stop-opacity="0.05" />
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.3" />
+                    </radialGradient>
+                    <clipPath id="headerClip">
+                        <path d="M 10 60 A 40 40 0 0 1 90 60 Z" />
+                    </clipPath>
+                </defs>
+
+                <rect x="35" y="60" width="30" height="20" fill="#1e293b" stroke="#111" stroke-width="4" stroke-linejoin="round" />
+                
+                <g>
+                    <path d="M 30 80 L 70 80 L 70 90 L 30 90 Z" fill="#1e293b" stroke="#111" stroke-width="4" stroke-linejoin="round" />
+                    <rect x="5" y="90" width="90" height="15" rx="3" fill="#eab308" stroke="#111" stroke-width="4" stroke-linejoin="round" />
+                    <rect x="5" y="90" width="90" height="15" rx="3" fill="url(#headerB_Gloss)" />
+                </g>
+
+                <g>
+                    <path d="M 10 60 A 40 40 0 0 1 90 60 Z" fill="#eab308" stroke="#111" stroke-width="4" stroke-linejoin="round" />
+                </g>
+                <path d="M 10 60 A 40 40 0 0 1 90 60 Z" fill="url(#headerD_Gloss)" />
+                
+                <path d="M 38 32 h 22 a 2 2 0 0 1 2 2 v 1 h 2 a 1 1 0 0 1 1 1 v 2 a 1 1 0 0 1 -1 1 h -2 v 1 a 2 2 0 0 1 -2 2 h -22 a 2 2 0 0 1 -2 -2 v -6 a 2 2 0 0 1 2 -2 Z" fill="#0f172a" stroke="#111" stroke-width="4" stroke-linejoin="round" />
+                <rect x="38" y="34" width="22" height="6" rx="1" fill="#22c55e" />
+                <rect x="38" y="34.5" width="22" height="2" rx="0.5" fill="rgba(255,255,255,0.7)" />
+
+                <g clip-path="url(#headerClip)">
+                    <ellipse cx="35" cy="60" rx="10" ry="15" fill="#111" />
+                    <ellipse cx="65" cy="60" rx="10" ry="15" fill="#111" />
+                    <ellipse cx="35" cy="56" rx="4" ry="6" fill="rgba(255,255,255,0.25)" />
+                    <ellipse cx="65" cy="56" rx="4" ry="6" fill="rgba(255,255,255,0.25)" />
                 </g>
             </svg>
             CodeKickers
